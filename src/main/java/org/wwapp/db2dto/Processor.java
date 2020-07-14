@@ -22,26 +22,27 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 import lombok.Setter;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
+/**
+ * @author Walery Wysotsky <dev@wysotsky.info>
+ */
 public class Processor {
 
-  private static final String METHOD_HAS_DIRTY_FIELD = "hasDirtyField";
-  private static final String METHOD_IS_DIRTY = "isDirty";
-  private static final String METHOD_RESET_DIRTY_FIELD = "resetDirtyField";
-  private static final String METHOD_RESET_DIRTY = "resetDirty";
+  private static final String METHOD_HAS_CHANGED_FIELD = "hasChangedField";
+  private static final String METHOD_IS_CHANGED = "isChanged";
+  private static final String METHOD_RESET_CHANGED_FIELD = "resetChangedField";
+  private static final String METHOD_RESET_CHANGED = "resetChanged";
   private static final String METHOD_GET_FIELD_NAMES = "getFieldNames";
-  private static final String FIELD_FIELD_NAMES = "fieldNames";
-  private static final String FIELD_DIRTY_FIELDS = "dirtyFields";
   private static final String PERCENT = "%";
   private static final String DOUBLE_QUOTE = "\"";
   private static final String PARAM_FIELD_NAME = "fieldName";
 
-  @Setter private Config config;
+  @Setter
+  private Config config;
 
   private TypeSpec generateBaseMethods(String tableName, List<DBColumn> columns)
-      throws IOException {
-    List<Modifier> methodModifiers =
-        tableName != null ? List.of(Modifier.PUBLIC) : List.of(Modifier.ABSTRACT, Modifier.PUBLIC);
+          throws IOException {
+    List<Modifier> methodModifiers
+            = tableName != null ? List.of(Modifier.PUBLIC) : List.of(Modifier.ABSTRACT, Modifier.PUBLIC);
 
     if (tableName == null) {
       System.out.println("Generate base interface: " + config.baseInterfaceName);
@@ -50,104 +51,112 @@ public class Processor {
     }
 
     FieldSpec fieldFieldNames = null;
-    FieldSpec fieldDirtyFields = null;
+    FieldSpec fieldChangedFields = null;
     if (tableName != null) {
-      fieldFieldNames =
-          FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), FIELD_DIRTY_FIELDS)
-              .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
-              .initializer("new HashSet<>()")
+      fieldFieldNames
+              = FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), ClassGenerator.FIELD_CHANGED_FIELDS)
+                      .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                      .initializer("new HashSet<>()")
+                      .build();
+      fieldChangedFields
+              = FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), ClassGenerator.FIELD_FIELD_NAMES)
+                      .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                      .initializer(
+                              "Stream.of("
+                              + columns.stream()
+                                      .map(it -> DOUBLE_QUOTE + it.name + DOUBLE_QUOTE)
+                                      .collect(Collectors.joining(",\n"))
+                              + "\n.collect(Collectors.toSet())")
+                      .build();
+    }
+
+    MethodSpec methodHasChangedField
+            = MethodSpec.methodBuilder(METHOD_HAS_CHANGED_FIELD)
+                    .addModifiers(methodModifiers)
+                    .addParameter(String.class, PARAM_FIELD_NAME, Modifier.FINAL)
+                    .returns(boolean.class)
+                    .build();
+    if (tableName != null) {
+      methodHasChangedField
+              = methodHasChangedField.toBuilder()
+                      .addStatement("$L.contains($L)", ClassGenerator.FIELD_CHANGED_FIELDS, PARAM_FIELD_NAME)
+                      .build();
+    }
+
+    MethodSpec methodIsChanged
+            = MethodSpec.methodBuilder(METHOD_IS_CHANGED)
+                    .addModifiers(methodModifiers)
+                    .returns(boolean.class)
+                    .build();
+    if (tableName != null) {
+      methodIsChanged
+              = methodIsChanged.toBuilder().addStatement("!$L.isEmpty()", ClassGenerator.FIELD_CHANGED_FIELDS).build();
+    }
+
+    MethodSpec methodResetChangedField
+            = MethodSpec.methodBuilder(METHOD_RESET_CHANGED_FIELD)
+                    .addModifiers(methodModifiers)
+                    .addParameter(String.class, PARAM_FIELD_NAME, Modifier.FINAL)
+                    .build();
+    if (tableName != null) {
+      methodResetChangedField
+              = methodResetChangedField.toBuilder()
+                      .addStatement("$L.remove($L)", ClassGenerator.FIELD_CHANGED_FIELDS, PARAM_FIELD_NAME)
+                      .build();
+    }
+
+    MethodSpec methodResetChanged
+            = MethodSpec.methodBuilder(METHOD_RESET_CHANGED).addModifiers(methodModifiers).build();
+    if (tableName != null) {
+      methodResetChanged = methodResetChanged.toBuilder()
+              .addStatement("$L.clear()", ClassGenerator.FIELD_CHANGED_FIELDS)
               .build();
-      fieldDirtyFields =
-          FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), FIELD_FIELD_NAMES)
-              .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
-              .initializer(
-                  "Stream.of("
-                      + columns.stream()
-                          .map(it -> DOUBLE_QUOTE + it.name + DOUBLE_QUOTE)
-                          .collect(Collectors.joining(",\n"))
-                      + "\n.collect(Collectors.toSet())")
+    }
+
+    MethodSpec methodGetFieldNames
+            = MethodSpec.methodBuilder(METHOD_GET_FIELD_NAMES)
+                    .addModifiers(methodModifiers)
+                    .returns(ParameterizedTypeName.get(Set.class, String.class))
+                    .build();
+    if (tableName != null) {
+      methodGetFieldNames = methodGetFieldNames.toBuilder()
+              .addStatement("return $L", ClassGenerator.FIELD_FIELD_NAMES)
               .build();
-    }
-
-    MethodSpec methodHasDirtyField =
-        MethodSpec.methodBuilder(METHOD_HAS_DIRTY_FIELD)
-            .addModifiers(methodModifiers)
-            .addParameter(String.class, PARAM_FIELD_NAME, Modifier.FINAL)
-            .returns(boolean.class)
-            .build();
-    if (tableName != null) {
-      methodHasDirtyField =
-          methodHasDirtyField.toBuilder()
-              .addStatement("$L.contains($L)", FIELD_DIRTY_FIELDS, PARAM_FIELD_NAME)
-              .build();
-    }
-
-    MethodSpec methodIsDirty =
-        MethodSpec.methodBuilder(METHOD_IS_DIRTY)
-            .addModifiers(methodModifiers)
-            .returns(boolean.class)
-            .build();
-    if (tableName != null) {
-      methodIsDirty =
-          methodIsDirty.toBuilder().addStatement("!$L.isEmpty()", FIELD_DIRTY_FIELDS).build();
-    }
-
-    MethodSpec methodResetDirtyField =
-        MethodSpec.methodBuilder(METHOD_RESET_DIRTY_FIELD)
-            .addModifiers(methodModifiers)
-            .addParameter(String.class, PARAM_FIELD_NAME, Modifier.FINAL)
-            .build();
-    if (tableName != null) {
-      methodResetDirtyField =
-          methodResetDirtyField.toBuilder()
-              .addStatement("$L.remove($L)", FIELD_DIRTY_FIELDS, PARAM_FIELD_NAME)
-              .build();
-    }
-
-    MethodSpec methodResetDirty =
-        MethodSpec.methodBuilder(METHOD_RESET_DIRTY).addModifiers(methodModifiers).build();
-    if (tableName != null) {
-      methodResetDirty =
-          methodResetDirty.toBuilder().addStatement("$L.clear()", FIELD_DIRTY_FIELDS).build();
-    }
-
-    MethodSpec methodGetFieldNames =
-        MethodSpec.methodBuilder(METHOD_GET_FIELD_NAMES)
-            .addModifiers(methodModifiers)
-            .returns(ParameterizedTypeName.get(Set.class, String.class))
-            .build();
-    if (tableName != null) {
-      methodGetFieldNames =
-          methodGetFieldNames.toBuilder().addStatement("return $L", FIELD_FIELD_NAMES).build();
     }
 
     TypeSpec baseType;
     if (tableName == null) {
       baseType = TypeSpec.interfaceBuilder(config.baseInterfaceName).build();
     } else {
-      baseType =
-          TypeSpec.classBuilder(config.classPrefix + tableName + config.classSuffix)
-              .addSuperinterface(ClassName.get(config.javaPackageName, config.baseInterfaceName))
-              .addField(fieldFieldNames)
-              .addField(fieldDirtyFields)
-              .build();
+      String classBaseName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL,
+              tableName.toLowerCase());
+
+      baseType
+              = TypeSpec.classBuilder(config.classPrefix + classBaseName + config.classSuffix)
+                      .addSuperinterface(ClassName.get(config.getPackageName(tableName),
+                              config.baseInterfaceName))
+                      .addField(fieldFieldNames)
+                      .addField(fieldChangedFields)
+                      .build();
     }
 
-    baseType =
-        baseType.toBuilder()
-            .addModifiers(Modifier.PUBLIC)
-            .addMethod(methodHasDirtyField)
-            .addMethod(methodIsDirty)
-            .addMethod(methodResetDirtyField)
-            .addMethod(methodResetDirty)
-            .addMethod(methodGetFieldNames)
-            .build();
+    baseType
+            = baseType.toBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addMethod(methodHasChangedField)
+                    .addMethod(methodIsChanged)
+                    .addMethod(methodResetChangedField)
+                    .addMethod(methodResetChanged)
+                    .addMethod(methodGetFieldNames)
+                    .build();
     return baseType;
   }
 
   private void generateForTable(String tableName, List<DBColumn> columns) throws IOException {
     TypeSpec clazz = generateBaseMethods(tableName, columns);
-    JavaFile javaFile = JavaFile.builder(config.javaPackageName, clazz).build();
+    ClassGenerator generator = new ClassGenerator(config);
+    clazz = generator.generate(tableName, clazz, columns);
+    JavaFile javaFile = JavaFile.builder(config.getPackageName(tableName), clazz).build();
     javaFile.writeTo(Paths.get(config.outputDir));
   }
 
@@ -159,11 +168,11 @@ public class Processor {
     Files.createDirectories(Paths.get(config.outputDir));
 
     TypeSpec baseInterface = generateBaseMethods(null, null);
-    JavaFile javaFile = JavaFile.builder(config.javaPackageName, baseInterface).build();
+    JavaFile javaFile = JavaFile.builder(config.getPackageName(""), baseInterface).build();
     javaFile.writeTo(Paths.get(config.outputDir));
 
-    try (Connection jdbcConnection =
-        DriverManager.getConnection(config.dbURL, config.dbUser, config.dbPassword)) {
+    try (Connection jdbcConnection
+            = DriverManager.getConnection(config.dbURL, config.dbUser, config.dbPassword)) {
       DatabaseMetaData metadata = jdbcConnection.getMetaData();
       try (ResultSet rs = metadata.getTables(null, null, PERCENT, null)) {
         while (rs.next()) {
@@ -175,9 +184,7 @@ public class Processor {
               columns.add(new DBColumn(rsColumns));
             }
           }
-          String javaTableName =
-              CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, tableName.toLowerCase());
-          generateForTable(javaTableName, columns);
+          generateForTable(tableName, columns);
         }
       }
     }

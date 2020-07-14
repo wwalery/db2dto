@@ -11,9 +11,11 @@ import lombok.ToString;
 public class DBColumn {
 
   public String name;
-  public String javaName;
+  public String javaFieldName;
+  public String javaPropertyName;
   public int sqlType;
   public String sqlTypeName;
+  public String javaType;
   public int size;
   public int digits;
   public boolean isNullable;
@@ -26,7 +28,8 @@ public class DBColumn {
    */
   public DBColumn(ResultSet rs) throws SQLException {
     name = rs.getString("COLUMN_NAME");
-    javaName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
+    javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
+    javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
     sqlType = rs.getInt("DATA_TYPE");
     sqlTypeName = rs.getString("TYPE_NAME");
     size = rs.getInt("COLUMN_SIZE");
