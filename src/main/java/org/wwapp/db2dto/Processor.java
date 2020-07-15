@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import lombok.Setter;
+import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 public class Processor {
@@ -81,13 +82,14 @@ public class Processor {
       try (ResultSet rs = metadata.getTables(null, null, PERCENT, null)) {
         while (rs.next()) {
           DBTable table = new DBTable();
-          table.name = rs.getString("TABLE_NAME");
+          String tableName = rs.getString("TABLE_NAME");
+          table.name = tableName.toLowerCase();
           table.javaName =
-              config.classPrefix
+              config.getClassPrefix(table.name)
                   + CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, table.name.toLowerCase())
-                  + config.classSuffix;
+                  + config.getClassSuffix(table.name);
 
-          try (ResultSet rsColumns = metadata.getColumns(null, null, table.name, PERCENT)) {
+          try (ResultSet rsColumns = metadata.getColumns(null, null, tableName, PERCENT)) {
             table.columns = new ArrayList<>();
             while (rsColumns.next()) {
               table.columns.add(new DBColumn(rsColumns));

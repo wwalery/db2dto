@@ -1,6 +1,6 @@
 // {{ column.name }}
 
-{% if (not config.isReadOnlyField(column.name)) %}
+{% if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}Changed() {
     changedFields.add("{{ column.name }}");
     return this;
@@ -13,7 +13,7 @@
 
 {#
 // GET/SET boolean
-{% if (not config.isReadOnlyField(column.name)) %}
+{% if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final boolean newValue) {
     byte value = newValue ?  (byte) 1 : (byte) 0);
     if ({{ column.javaFieldName }} != value) {
@@ -32,7 +32,7 @@
 
 {% if (config.isEnum(table.name, column.name)) %}
 
-{%  if (not config.isReadOnlyField(column.name)) %}
+{%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ config.getEnum(table.name, column.name) }} newValue) {
     if (!java.util.Objects.equals(newValue.name(), {{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue.name();
@@ -47,7 +47,7 @@
   }
 {% endif %}  
   
-{%  if (not config.isReadOnlyField(column.name)) %}
+{%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ column.javaType }} newValue) {
     if (!java.util.Objects.equals(newValue, {{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue;

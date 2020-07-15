@@ -1,6 +1,9 @@
 package org.wwapp.db2dto;
 
+import com.google.gson.Gson;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -9,6 +12,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 public class Main {
@@ -55,7 +59,13 @@ public class Main {
       formatter.printHelp("", options);
       return;
     }
-    Config config = new Config();
+    String configStr = Files.readString(Paths.get("./db2dto.conf"));
+    Gson gson = new Gson();
+    Config config = gson.fromJson(configStr, Config.class);
+    //    Config config = new Config();
+    //    String configStr = gson.toJson(config);
+    //    Files.writeString(Paths.get("./db2dto.conf"), configStr);
+
     if (cmd.hasOption(OPTION_DB_URL)) {
       config.dbURL = cmd.getOptionValue(OPTION_DB_URL);
     }

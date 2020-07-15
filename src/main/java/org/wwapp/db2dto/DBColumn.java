@@ -28,13 +28,20 @@ public class DBColumn {
   public boolean isNullable;
   public String description;
 
+  public DBColumn(String fieldName, String fieldJavaType) {
+    name = fieldName.toLowerCase();
+    javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
+    javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
+    javaType = fieldJavaType;
+  }
+
   /**
    * Convert result of Metadata.getColumns to column info object.
    *
    * @param rs
    */
   public DBColumn(ResultSet rs) throws SQLException {
-    name = rs.getString("COLUMN_NAME");
+    name = rs.getString("COLUMN_NAME").toLowerCase();
     javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
     javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
     sqlType = rs.getInt("DATA_TYPE");

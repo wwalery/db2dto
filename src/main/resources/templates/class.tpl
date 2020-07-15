@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import {{ config.packageName("") }};
 {% endif %}
 
-public class {{ table.javaName }} implements {{ config.baseInterfaceName }} {
+public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% for interface in config.getInterfaces(table.name) %}, {{ interface }}{% endfor %} {
 
   private final static Set<String> FIELD_NAMES = Stream.of({% for column in table.columns %}"{{ column.name }}"{% if not loop.last %}, {% endif %}
 {% endfor %}).collect(Collectors.toSet());
@@ -16,6 +16,10 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }} {
   private final Set<String> changedFields = new HashSet();
 
 {% for column in table.columns %}
+  private {{ column.javaType }} {{ column.javaFieldName }};
+{% endfor %}
+
+{% for column in config.fields(table.name) %}
   private {{ column.javaType }} {{ column.javaFieldName }};
 {% endfor %}
 
@@ -44,5 +48,14 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }} {
 {% for column in table.columns %}
 {% include "templates/column.tpl" %}
 {% endfor %}
+
+{% for column in config.fields(table.name) %}
+{% include "templates/column.tpl" %}
+{% endfor %}
+
+  public String toString() {
+    return {% for column in config.getToStringFields(table) %}"{{ column.javaFieldName }}=" + {{ column.javaFieldName }}{% if not loop.last %} + ", " + {% endif %}{% endfor %};
+  }
+
 
 }
