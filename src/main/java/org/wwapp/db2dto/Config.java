@@ -1,14 +1,12 @@
 package org.wwapp.db2dto;
 
 import com.google.common.base.Strings;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import lombok.Getter;
 import lombok.Setter;
 
 /**
@@ -18,102 +16,77 @@ import lombok.Setter;
  */
 public class Config {
 
+  private static final String DEFAULT_KEY = "";
+
   // DB config
-  /**
-   * URL to database, required.
-   */
+  /** URL to database, required. */
   public String dbURL;
-  /**
-   * Database user, required.
-   */
+  /** Database user, required. */
   public String dbUser;
-  /**
-   * Database password, optional.
-   */
+  /** Database password, optional. */
   public String dbPassword = "";
-
-  /**
-   * Java package name for generated classes.
-   *
-   * <p>
-   * 'dto' by default
-   */
-  @Setter
-  private String packageName = "dto";
-
-  /**
-   * Java package name for generated classes per table name.
-   */
-  private final Map<String, String> packageNames = new HashMap<>();
 
   /**
    * Output directory for generated classes.
    *
-   * <p>
-   * './build/generated.dto' by default
+   * <p>'./build/generated.dto' by default
    */
   public String outputDir = "./build/generated.dto";
 
   /**
    * Name of base interface for all generated classes.
    *
-   * <p>
-   * 'IData' by default
+   * <p>'IData' by default
    */
   public String baseInterfaceName = "IData";
 
   /**
    * Prefix for generated class name.
    *
-   * <p>
-   * empty by default
+   * <p>empty by default
    */
   public String classPrefix = "";
 
   /**
    * Suffix for generated class name.
    *
-   * <p>
-   * 'Data' by default
+   * <p>'Data' by default
    */
   public String classSuffix = "Data";
 
-  /**
-   * List of read-only fields, common for all tables.
-   */
-  @Getter
+  /** List of read-only fields, common for all tables. */
   Set<String> readOnlyFields = new TreeSet<>();
 
   /**
-   * List of interfaces, for add to generated class by table.
+   * Java package name for generated classes.
+   *
+   * <p>'dto' by default
    */
-  private final Map<String, Set<Class<?>>> interfaces = new HashMap<>();
+  @Setter private String packageName = "dto";
 
-  /**
-   * List of additional fields, for add to generated class by table.
-   */
-  private final Map<String, Map<String, Class<?>>> additionalFields = new HashMap<>();
+  /** Java package name for generated classes per table name. */
+  private final Map<String, String> packageNames = new HashMap<>();
 
-  /**
-   * Consider field as enumerate, for generated class by table.
-   */
-  private final Map<String, Map<String, Enum<?>>> enumFields = new HashMap<>();
+  /** List of interfaces, for add to generated class by table. */
+  private final Map<String, Set<String>> interfaces = new HashMap<>();
 
-  /**
-   * Ignore this fields in 'toString' method by table.
-   */
+  /** List of additional fields, for add to generated class by table. */
+  private final Map<String, Map<String, String>> additionalFields = new HashMap<>();
+
+  /** Consider field as enumerate, for generated class by table. */
+  private final Map<String, Map<String, String>> enumFields = new HashMap<>();
+
+  /** Ignore this fields in 'toString' method by table. */
   private final Map<String, Set<String>> toStringIgnoreFields = new HashMap<>();
-
-  private final static String DEFAULT_KEY = "";
 
   /**
    * Link package name to table name
    *
    * @param tableName
-   * @param packageName
+   * @param packageNameValue
    */
-  public void registerPackageName(String tableName, String packageName) {
-    packageNames.put(tableName, packageName);
+  public void registerPackageName(String tableName, String packageNameValue) {
+    packageNames.put(tableName, packageNameValue);
   }
 
   /**
@@ -135,7 +108,7 @@ public class Config {
    *
    * @param interfaceClass
    */
-  public void registerInterface(Class<?> interfaceClass) {
+  public void registerInterface(String interfaceClass) {
     registerInterface(DEFAULT_KEY, interfaceClass);
   }
 
@@ -145,8 +118,8 @@ public class Config {
    * @param tableName
    * @param interfaceClass
    */
-  public void registerInterface(String tableName, Class<?> interfaceClass) {
-    List<Class<?>> interfaceList = interfaces.computeIfAbsent(tableName, () -> new ArrayList<>());
+  public void registerInterface(String tableName, String interfaceClass) {
+    Set<String> interfaceList = interfaces.computeIfAbsent(tableName, key -> new HashSet<>());
     interfaceList.add(interfaceClass);
   }
 
@@ -156,11 +129,11 @@ public class Config {
    * @param tableName
    * @return
    */
-  Set<Class<?>> getInterfaces(String tableName) {
+  Set<String> getInterfaces(String tableName) {
     if (interfaces.containsKey(tableName)) {
       return interfaces.get(tableName);
     } else {
-      return interfaces.getOrDefault(DEFAULT_KEY, Collections.EMPTY_SET);
+      return interfaces.getOrDefault(DEFAULT_KEY, Collections.<String>emptySet());
     }
   }
 
@@ -170,7 +143,7 @@ public class Config {
    * @param fieldName
    * @param fieldType
    */
-  public void addField(String fieldName, Class<?> fieldType) {
+  public void addField(String fieldName, String fieldType) {
     addField(DEFAULT_KEY, fieldName, fieldType);
   }
 
@@ -181,9 +154,9 @@ public class Config {
    * @param fieldName
    * @param fieldType
    */
-  public void addField(String tableName, String fieldName, Class<?> fieldType) {
-    Map<String, Class<?>> fieldMap = additionalFields.computeIfAbsent(tableName,
-            () -> new HashMap<>());
+  public void addField(String tableName, String fieldName, String fieldType) {
+    Map<String, String> fieldMap =
+        additionalFields.computeIfAbsent(tableName, key -> new HashMap<>());
     fieldMap.put(fieldName, fieldType);
   }
 
@@ -193,11 +166,11 @@ public class Config {
    * @param tableName
    * @return
    */
-  Map<String, Class<?>> getFields(String tableName) {
+  Map<String, String> getFields(String tableName) {
     if (additionalFields.containsKey(tableName)) {
       return additionalFields.get(tableName);
     } else {
-      return additionalFields.getOrDefault(DEFAULT_KEY, Collections.EMPTY_MAP);
+      return additionalFields.getOrDefault(DEFAULT_KEY, Collections.<String, String>emptyMap());
     }
   }
 
@@ -207,7 +180,7 @@ public class Config {
    * @param fieldName
    * @param enumType
    */
-  public void asEnum(String fieldName, Enum enumType) {
+  public void asEnum(String fieldName, String enumType) {
     asEnum(DEFAULT_KEY, fieldName, enumType);
   }
 
@@ -218,9 +191,8 @@ public class Config {
    * @param fieldName
    * @param enumType
    */
-  public void asEnum(String tableName, String fieldName, Enum<?> enumType) {
-    Map<String, Enum<?>> fieldMap = enumFields.computeIfAbsent(tableName,
-            () -> new HashMap<>());
+  public void asEnum(String tableName, String fieldName, String enumType) {
+    Map<String, String> fieldMap = enumFields.computeIfAbsent(tableName, key -> new HashMap<>());
     fieldMap.put(fieldName, enumType);
   }
 
@@ -230,17 +202,23 @@ public class Config {
    * @param tableName
    * @return
    */
-  Map<String, Enum<?>> getEnums(String tableName) {
+  Map<String, String> getEnums(String tableName) {
     if (enumFields.containsKey(tableName)) {
       return enumFields.get(tableName);
     } else {
-      return enumFields.getOrDefault(DEFAULT_KEY, Collections.EMPTY_MAP);
+      return enumFields.getOrDefault(DEFAULT_KEY, Collections.<String, String>emptyMap());
     }
   }
 
-  /**
-   * Ignore this fields in 'toString' method for all tables.
-   */
+  public boolean isEnum(final String tableName, final String fieldName) {
+    return getEnums(tableName).containsKey(fieldName);
+  }
+
+  public String getEnum(final String tableName, final String fieldName) {
+    return getEnums(tableName).get(fieldName);
+  }
+
+  /** Ignore this fields in 'toString' method for all tables. */
   /**
    * Add field, for add to all generated class.
    *
@@ -257,8 +235,7 @@ public class Config {
    * @param fieldName
    */
   public void addToStringIgnore(String tableName, String fieldName) {
-    List<String> fieldList = toStringIgnoreFields.computeIfAbsent(tableName,
-            () -> new ArrayList<>());
+    Set<String> fieldList = toStringIgnoreFields.computeIfAbsent(tableName, key -> new HashSet<>());
     fieldList.add(fieldName);
   }
 
@@ -272,8 +249,12 @@ public class Config {
     if (toStringIgnoreFields.containsKey(tableName)) {
       return toStringIgnoreFields.get(tableName);
     } else {
-      return toStringIgnoreFields.getOrDefault(DEFAULT_KEY, Collections.EMPTY_SET);
+      return toStringIgnoreFields.getOrDefault(DEFAULT_KEY, Collections.<String>emptySet());
     }
+  }
+
+  public boolean isReadOnlyField(final String fieldName) {
+    return readOnlyFields.contains(fieldName);
   }
 
   void check() {
