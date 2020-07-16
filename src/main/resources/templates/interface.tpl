@@ -1,6 +1,6 @@
 package {{ config.packageName("") }};
 
-impport java.util.Set;
+import java.util.Set;
 
 public interface {{ config.baseInterfaceName }} {
 

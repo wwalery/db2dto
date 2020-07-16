@@ -1,17 +1,14 @@
 package org.wwapp.db2dto;
 
 import com.google.gson.Gson;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
@@ -30,7 +27,7 @@ public class Main {
   }
 
   /** @param args the command line arguments */
-  public static void main(String[] args) throws ParseException, IOException, SQLException {
+  public static void main(String[] args) throws Exception {
     // configure
     Options options = new Options();
     options.addOption(

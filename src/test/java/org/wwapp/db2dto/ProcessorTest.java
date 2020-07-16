@@ -51,6 +51,7 @@ public class ProcessorTest {
     Files.delete(Paths.get("testdb.log"));
     Files.delete(Paths.get("testdb.properties"));
     Files.delete(Paths.get("testdb.script"));
+    Files.delete(Paths.get("testdb.tmp"));
   }
 
   /** Test of execute method, of class Processor. */

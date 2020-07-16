@@ -27,11 +27,24 @@ public class Config {
   public String dbPassword = "";
 
   /**
-   * Output directory for generated classes.
+   * Output directory for generated source.
    *
-   * <p>'./build/generated.dto' by default
+   * <p>'./build/dto/generated' by default
    */
-  public String outputDir = "./build/generated.dto";
+  public String sourceOutputDir = "./build/dto/generated";
+
+  /** compile generated source to jar. */
+  public boolean compile;
+
+  /**
+   * Output directory for compiled classes.
+   *
+   * <p>'./build/dto/classes' by default
+   */
+  public String classOutputDir = "./build/dto/classes";
+
+  /** Compiled jar name. */
+  public String jarPath = "build/db2dto_generated.jar";
 
   /**
    * Name of base interface for all generated classes.

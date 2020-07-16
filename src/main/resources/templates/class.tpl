@@ -5,8 +5,14 @@ import java.util.HashSet;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 {% if (config.packageName("") != config.packageName(table.name)) %}
-import {{ config.packageName("") }};
+import {{ config.packageName("") }}.{{ config.baseInterfaceName }};
 {% endif %}
+{% for interface in config.getInterfaces(table.name) %}
+import {{ interface }};
+{% endfor %}
+{% for enum in config.getEnums(table.name).values() %}
+import {{ enum }};
+{% endfor %}
 
 public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% for interface in config.getInterfaces(table.name) %}, {{ interface }}{% endfor %} {
 
@@ -33,11 +39,11 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   }
 
   public void resetChangedField(final String fieldName) {
-    return changedFields.remove(fieldName);
+    changedFields.remove(fieldName);
   }
 
   public void resetChanged() {
-    return changedFields.clear();
+    changedFields.clear();
   }
 
 
