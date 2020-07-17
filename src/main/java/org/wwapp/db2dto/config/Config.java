@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import org.wwapp.db2dto.DBColumn;
 import org.wwapp.db2dto.DBTable;
+import org.wwapp.db2dto.IPlugin;
 
 /**
  * Common configuration.
@@ -18,6 +20,8 @@ import org.wwapp.db2dto.DBTable;
  */
 public class Config {
 
+  @Getter private static Config CONFIG;
+
   // DB config
   /** URL to database, required. */
   public String dbURL;
@@ -25,6 +29,15 @@ public class Config {
   public String dbUser;
   /** Database password, optional. */
   public String dbPassword = "";
+  /** Database schema, optional. */
+  public String dbSchema;
+
+  /**
+   * Path to templates for source generation.
+   *
+   * <p>'./examples' by default
+   */
+  public String templateDir = "./templates";
 
   /**
    * Output directory for generated source.
@@ -58,12 +71,15 @@ public class Config {
 
   public final Map<String, TableConfig> tables;
 
+  @Getter private List<IPlugin> plugins = new ArrayList<>();
+
   public Config() {
     this.common = new TableConfig();
     this.tables = new HashMap<>();
     this.common.classPrefix = "";
     this.common.classSuffix = "Data";
     this.common.packageName = "dto";
+    CONFIG = this;
     //    this.common.readOnlyFields = new TreeSet<>();
     //    this.common.interfaces = new HashSet<>();
     //    this.common.additionalFields = new HashMap<>();
@@ -134,11 +150,11 @@ public class Config {
     }
   }
 
-  public void registerReadOnlyField(String fieldName) {
+  public void setFieldReadOnly(String fieldName) {
     common.readOnlyFields.add(fieldName);
   }
 
-  public void registerReadOnlyField(String tableName, String fieldName) {
+  public void setFieldReadOnly(String tableName, String fieldName) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).readOnlyFields.add(fieldName);
   }
 
@@ -147,7 +163,7 @@ public class Config {
    *
    * @param interfaceClass
    */
-  public void registerInterface(String interfaceClass) {
+  public void useInterface(String interfaceClass) {
     common.interfaces.add(interfaceClass);
   }
 
@@ -157,7 +173,7 @@ public class Config {
    * @param tableName
    * @param interfaceClass
    */
-  public void registerInterface(String tableName, String interfaceClass) {
+  public void useInterface(String tableName, String interfaceClass) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).interfaces.add(interfaceClass);
   }
 
@@ -324,6 +340,49 @@ public class Config {
       return false;
     }
     return table.readOnlyFields.contains(fieldName);
+  }
+
+  /**
+   * Set field type forcibly for all tables.
+   *
+   * @param fieldName
+   * @param enumType
+   */
+  public void asFieldType(String fieldName, String fieldType) {
+    common.fieldTypes.put(fieldName, fieldType);
+  }
+
+  /**
+   * Set field type forcibly by table name.
+   *
+   * @param tableName
+   * @param fieldName
+   * @paramfieldTypeenumType
+   */
+  public void asFieldType(String tableName, String fieldName, String fieldType) {
+    tables
+        .computeIfAbsent(tableName, key -> new TableConfig())
+        .fieldTypes
+        .put(fieldName, fieldType);
+  }
+
+  /**
+   * Gets fields types.
+   *
+   * @param tableName
+   * @return
+   */
+  public Map<String, String> getFieldTypes(String tableName) {
+    Map<String, String> result = new HashMap<>(common.fieldTypes);
+    TableConfig table = tables.get(tableName);
+    if (table != null) {
+      result.putAll(table.fieldTypes);
+    }
+    return result;
+  }
+
+  public void registerPlugin(IPlugin plugin) {
+    plugins.add(plugin);
   }
 
   public void check() {

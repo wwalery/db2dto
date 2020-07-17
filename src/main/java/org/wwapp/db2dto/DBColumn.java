@@ -1,12 +1,14 @@
 package org.wwapp.db2dto;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.Strings;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 @ToString
@@ -40,7 +42,7 @@ public class DBColumn {
    *
    * @param rs
    */
-  public DBColumn(ResultSet rs) throws SQLException {
+  public DBColumn(String tableName, ResultSet rs) throws SQLException {
     name = rs.getString("COLUMN_NAME").toLowerCase();
     javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
     javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
@@ -50,7 +52,10 @@ public class DBColumn {
     digits = rs.getInt("DECIMAL_DIGITS");
     isNullable = rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable;
     description = rs.getString("REMARKS");
-    javaType = guessJavaType();
+    javaType = Config.getCONFIG().getFieldTypes(tableName).get(name);
+    if (javaType == null) {
+      javaType = guessJavaType();
+    }
   }
 
   private String guessJavaType() {
@@ -89,7 +94,17 @@ public class DBColumn {
         return "java.sql.Timestamp";
       case Types.TINYINT:
         return "Byte";
+      case Types.BINARY:
+      case Types.VARBINARY:
+      case Types.LONGVARBINARY:
+        return "byte[]";
       default:
+        for (IPlugin plugin : Config.getCONFIG().getPlugins()) {
+          String result = plugin.getJavaType(this);
+          if (!Strings.isNullOrEmpty(result)) {
+            return result;
+          }
+        }
         LOG.warn("Undefined java type for field [{}]", this);
         return STRING;
     }

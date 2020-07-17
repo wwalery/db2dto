@@ -108,15 +108,24 @@ dependencies {
   
 }
 
+task copyResources(type: Copy) {
+  destinationDir = file('./build/libs')
+  from('./resources')
+}
+
 shadowJar {
-  archiveFileName = 'db2dto-' + version + '.jar'
+  dependsOn copyResources
+  baseName = 'db2dto'
+  classifier = ''
 }
 
 
 test {
   testLogging {
     events /*"passed", */ "skipped", "failed"
+//    events "started", "passed", "skipped", "failed"
     exceptionFormat = 'full'
+    showStandardStreams = true
   }
   afterSuite { desc, result ->
     if (!desc.parent) { // will match the outermost suite

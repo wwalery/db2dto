@@ -24,7 +24,7 @@ import org.wwapp.db2dto.config.Config;
 public class ProcessorTest {
 
   private static final String DB_USER = "sa";
-  private static final String DB_URL = "jdbc:hsqldb:testdb";
+  private static final String DB_URL = "jdbc:hsqldb:mem:testdb";
 
   private Connection conn;
 
@@ -48,20 +48,22 @@ public class ProcessorTest {
   @After
   public void after() throws SQLException, IOException {
     conn.close();
-    Files.delete(Paths.get("testdb.log"));
-    Files.delete(Paths.get("testdb.properties"));
-    Files.delete(Paths.get("testdb.script"));
-    Files.delete(Paths.get("testdb.tmp"));
+    //    Files.delete(Paths.get("testdb.log"));
+    //    Files.delete(Paths.get("testdb.properties"));
+    //    Files.delete(Paths.get("testdb.script"));
+    //    Files.delete(Paths.get("testdb.tmp"));
   }
 
   /** Test of execute method, of class Processor. */
   @Test
   public void testExecute() throws Exception {
-    String configStr = Files.readString(Paths.get("./examples/db2dto.conf"));
+    String configStr = Files.readString(Paths.get("./resources/db2dto.conf"));
     Gson gson = new Gson();
     Config config = gson.fromJson(configStr, Config.class);
     config.dbURL = DB_URL;
     config.dbUser = DB_USER;
+    config.dbSchema = "PUBLIC";
+    config.templateDir = "./resources/templates";
     Processor instance = new Processor();
     instance.setConfig(config);
     instance.execute();

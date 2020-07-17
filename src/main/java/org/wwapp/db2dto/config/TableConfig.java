@@ -43,4 +43,7 @@ public class TableConfig {
 
   /** Ignore this fields in 'toString' method by table. */
   Set<String> toStringIgnoreFields = new TreeSet<>();
+
+  /** Set field type forcibly. */
+  Map<String, String> fieldTypes = new HashMap<>();
 }

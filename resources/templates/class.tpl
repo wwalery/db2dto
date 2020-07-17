@@ -52,11 +52,11 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   }
 
 {% for column in table.columns %}
-{% include "templates/column.tpl" %}
+{% include "./column.tpl" %}
 {% endfor %}
 
 {% for column in config.fields(table.name) %}
-{% include "templates/column.tpl" %}
+{% include "./column.tpl" %}
 {% endfor %}
 
   public String toString() {

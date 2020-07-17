@@ -2,10 +2,8 @@ package org.wwapp.db2dto;
 
 import com.google.common.base.CaseFormat;
 import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -21,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.jar.Pack200;
 import java.util.stream.Collectors;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -31,34 +28,33 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.wwapp.db2dto.config.Config;
 
-/**
- * @author Walery Wysotsky <dev@wysotsky.info>
- */
+/** @author Walery Wysotsky <dev@wysotsky.info> */
 @Slf4j
 public class Processor {
 
-  private static final String TEMPLATE_INTERFACE = "templates/interface.tpl";
-  private static final String TEMPLATE_CLASS = "templates/class.tpl";
+  private static final String TEMPLATE_INTERFACE = "interface.tpl";
+  private static final String TEMPLATE_CLASS = "class.tpl";
   private static final String PERCENT = "%";
   private static final char DOT = '.';
   private static final char SLASH = '/';
   private static final String CONFIG = "config";
   private static final String EXT_JAVA = ".java";
+  private static final String SPACE = " ";
 
-  @Setter
-  private Config config;
+  @Setter private Config config;
 
   private PebbleEngine pebbleEngine;
 
   private void writeToDisk(String packageName, String className, String data) throws IOException {
-    Path path
-            = Paths.get(config.sourceOutputDir, packageName.replace(DOT, SLASH), className + EXT_JAVA);
+    Path path =
+        Paths.get(config.sourceOutputDir, packageName.replace(DOT, SLASH), className + EXT_JAVA);
     Files.createDirectories(Paths.get(config.sourceOutputDir, packageName.replace(DOT, SLASH)));
     Files.writeString(path, data);
   }
 
   private void generateForTable(DBTable table) throws IOException {
-    PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(TEMPLATE_CLASS);
+    PebbleTemplate compiledTemplate =
+        pebbleEngine.getTemplate(config.templateDir + SLASH + TEMPLATE_CLASS);
     Writer writer = new StringWriter();
     compiledTemplate.evaluate(writer, Map.of(CONFIG, config, "table", table));
     String result = writer.toString();
@@ -72,13 +68,12 @@ public class Processor {
     config.check();
     Files.createDirectories(Paths.get(config.sourceOutputDir));
 
-    pebbleEngine
-            = new PebbleEngine.Builder()
-                    //                    .syntax(syntax)
-                    .loader(new ClasspathLoader())
-                    .cacheActive(true)
-                    .strictVariables(true)
-                    .build();
+    pebbleEngine =
+        new PebbleEngine.Builder()
+            //                    .syntax(syntax)
+            .cacheActive(true)
+            .strictVariables(true)
+            .build();
     //    pebbleStringEngine = new PebbleEngine.Builder()
     //            .syntax(syntax)
     //            .loader(new StringLoader())
@@ -86,29 +81,30 @@ public class Processor {
     //            .strictVariables(true)
     //            .build();
 
-    PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(TEMPLATE_INTERFACE);
+    PebbleTemplate compiledTemplate =
+        pebbleEngine.getTemplate(config.templateDir + SLASH + TEMPLATE_INTERFACE);
     Writer writer = new StringWriter();
     compiledTemplate.evaluate(writer, Map.of(CONFIG, config));
     String result = writer.toString();
     writeToDisk(config.getPackageName(""), config.baseInterfaceName, result);
 
-    try (Connection jdbcConnection
-            = DriverManager.getConnection(config.dbURL, config.dbUser, config.dbPassword)) {
+    try (Connection jdbcConnection =
+        DriverManager.getConnection(config.dbURL, config.dbUser, config.dbPassword)) {
       DatabaseMetaData metadata = jdbcConnection.getMetaData();
-      try (ResultSet rs = metadata.getTables(null, null, PERCENT, null)) {
+      try (ResultSet rs = metadata.getTables(null, config.dbSchema, PERCENT, null)) {
         while (rs.next()) {
           DBTable table = new DBTable();
           String tableName = rs.getString("TABLE_NAME");
           table.name = tableName.toLowerCase();
-          table.javaName
-                  = config.getClassPrefix(table.name)
+          table.javaName =
+              config.getClassPrefix(table.name)
                   + CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, table.name.toLowerCase())
                   + config.getClassSuffix(table.name);
 
           try (ResultSet rsColumns = metadata.getColumns(null, null, tableName, PERCENT)) {
             table.columns = new ArrayList<>();
             while (rsColumns.next()) {
-              table.columns.add(new DBColumn(rsColumns));
+              table.columns.add(new DBColumn(table.name, rsColumns));
             }
           }
           generateForTable(table);
@@ -122,39 +118,37 @@ public class Processor {
   }
 
   private void compile() throws Exception {
-// compile    
-    List<String> options
-            = List.of(
-                    // set compiler's classpath to be same as the runtime's
-                    "-classpath", System.getProperty("java.class.path"), "-d", config.classOutputDir);
+    // compile
+    List<String> options =
+        List.of(
+            // set compiler's classpath to be same as the runtime's
+            "-classpath", System.getProperty("java.class.path"), "-d", config.classOutputDir);
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
     Files.createDirectories(Paths.get(config.classOutputDir));
 
-    List<Path> filesToCompile
-            = Files.walk(Paths.get(config.sourceOutputDir))
-                    .filter(it -> it.toFile().isFile())
-                    .collect(Collectors.toList());
-    Iterable<? extends JavaFileObject> fileObjects
-            = fileManager.getJavaFileObjectsFromPaths(filesToCompile);
+    List<Path> filesToCompile =
+        Files.walk(Paths.get(config.sourceOutputDir))
+            .filter(it -> it.toFile().isFile())
+            .collect(Collectors.toList());
+    Iterable<? extends JavaFileObject> fileObjects =
+        fileManager.getJavaFileObjectsFromPaths(filesToCompile);
 
     Callable<Boolean> task = compiler.getTask(null, fileManager, null, options, null, fileObjects);
     if (!task.call()) {
       throw new Exception("Compilation failed");
     }
 
-// pack
+    // pack
     int baseLen = config.classOutputDir.length();
-    String filesToPack
-            = Files.walk(Paths.get(config.classOutputDir))
-                    .filter(it -> it.toFile().isFile())
-                    .map(it -> " -C " + config.classOutputDir 
-                            + " " 
-                            + it.toString().substring(baseLen + 1))
-                    .collect(Collectors.joining(" "));
-    
-    String cmd = "jar --create --file " + config.jarPath 
-            + " " + filesToPack;
+    String filesToPack =
+        Files.walk(Paths.get(config.classOutputDir))
+            .filter(it -> it.toFile().isFile())
+            .map(
+                it -> " -C " + config.classOutputDir + SPACE + it.toString().substring(baseLen + 1))
+            .collect(Collectors.joining(SPACE));
+
+    String cmd = "jar --create --file " + config.jarPath + SPACE + filesToPack;
     Process process = Runtime.getRuntime().exec(cmd);
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

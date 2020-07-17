@@ -27,6 +27,7 @@ CREATE TABLE test_table_2 (
   enum_field_2 VARCHAR(50),
   big_field_2 VARCHAR(1000),
   read_only INT,
+  test_array INT ARRAY DEFAULT ARRAY[],
   is_deleted TINYINT,
   PRIMARY KEY (id)
 );
