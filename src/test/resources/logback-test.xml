@@ -5,7 +5,10 @@
     </encoder>
   </appender>
 
-    <!-- control the level of output here -->
+
+
+  <logger name="com.mitchellbosecke.pebble" level="INFO" />
+  
   <root level="debug">
     <appender-ref ref="STDOUT" />
   </root>

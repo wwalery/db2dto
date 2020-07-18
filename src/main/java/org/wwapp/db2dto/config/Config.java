@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import org.wwapp.db2dto.DBColumn;
 import org.wwapp.db2dto.DBTable;
-import org.wwapp.db2dto.IPlugin;
 
 /**
  * Common configuration.
@@ -70,8 +69,6 @@ public class Config {
   public final TableConfig common;
 
   public final Map<String, TableConfig> tables;
-
-  @Getter private List<IPlugin> plugins = new ArrayList<>();
 
   public Config() {
     this.common = new TableConfig();
@@ -379,10 +376,6 @@ public class Config {
       result.putAll(table.fieldTypes);
     }
     return result;
-  }
-
-  public void registerPlugin(IPlugin plugin) {
-    plugins.add(plugin);
   }
 
   public void check() {

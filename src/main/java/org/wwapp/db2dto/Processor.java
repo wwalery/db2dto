@@ -16,6 +16,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -24,6 +25,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.wwapp.db2dto.config.Config;
@@ -44,6 +46,8 @@ public class Processor {
   @Setter private Config config;
 
   private PebbleEngine pebbleEngine;
+
+  @Getter private Map<String, DBTable> tables = new HashMap<>();
 
   private void writeToDisk(String packageName, String className, String data) throws IOException {
     Path path =
@@ -104,9 +108,10 @@ public class Processor {
           try (ResultSet rsColumns = metadata.getColumns(null, null, tableName, PERCENT)) {
             table.columns = new ArrayList<>();
             while (rsColumns.next()) {
-              table.columns.add(new DBColumn(table.name, rsColumns));
+              table.columns.add(new DBColumn(rsColumns));
             }
           }
+          tables.put(table.name, table);
           generateForTable(table);
         }
       }

@@ -9,6 +9,8 @@ import java.sql.Types;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.wwapp.db2dto.config.Config;
+import org.wwapp.db2dto.plugin.IPlugin;
+import org.wwapp.db2dto.plugin.PluginHandler;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 @ToString
@@ -20,6 +22,7 @@ public class DBColumn {
   private static final String BOOLEAN = "Boolean";
 
   public String name;
+  public String tableName;
   public String javaFieldName;
   public String javaPropertyName;
   public int sqlType;
@@ -42,8 +45,9 @@ public class DBColumn {
    *
    * @param rs
    */
-  public DBColumn(String tableName, ResultSet rs) throws SQLException {
+  public DBColumn(ResultSet rs) throws SQLException {
     name = rs.getString("COLUMN_NAME").toLowerCase();
+    tableName = rs.getString("TABLE_NAME").toLowerCase();
     javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
     javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
     sqlType = rs.getInt("DATA_TYPE");
@@ -59,6 +63,12 @@ public class DBColumn {
   }
 
   private String guessJavaType() {
+    for (IPlugin plugin : PluginHandler.getPlugins()) {
+      String result = plugin.getJavaType(this);
+      if (!Strings.isNullOrEmpty(result)) {
+        return result;
+      }
+    }
     switch (sqlType) {
       case Types.BIGINT:
         return "Long";
@@ -99,12 +109,6 @@ public class DBColumn {
       case Types.LONGVARBINARY:
         return "byte[]";
       default:
-        for (IPlugin plugin : Config.getCONFIG().getPlugins()) {
-          String result = plugin.getJavaType(this);
-          if (!Strings.isNullOrEmpty(result)) {
-            return result;
-          }
-        }
         LOG.warn("Undefined java type for field [{}]", this);
         return STRING;
     }
