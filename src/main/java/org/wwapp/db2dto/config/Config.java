@@ -65,6 +65,12 @@ public class Config {
    */
   public String baseInterfaceName = "IData";
 
+  /** Generate ARRAY column as List. Otherwise - array ([]). */
+  public boolean arrayAsList;
+
+  /** Map between SQL type name and java type. */
+  public Map<String, String> sqlTypes = new HashMap<>();
+
   /** Common data for all tables. */
   public final TableConfig common;
 

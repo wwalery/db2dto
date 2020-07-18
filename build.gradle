@@ -12,10 +12,10 @@ apply plugin: 'jacoco'
 apply plugin: 'application'
 apply plugin: 'idea'
 apply plugin: 'checkstyle'
+apply plugin: 'maven'
+apply plugin: 'signing'
 apply plugin: 'com.github.sherter.google-java-format'
 apply plugin: "com.github.johnrengelman.shadow"
-
-group = 'org.wwapp'
 
 mainClassName = 'org.wwapp.db2dto.Main'
 ext.javaVersion = JavaVersion.VERSION_11
@@ -117,10 +117,65 @@ task copyResources(type: Copy) {
   from('./resources')
 }
 
+task pom {
+  doLast {
+    pom {
+      project {
+        name "${project.group}:${project.name}"
+        description project.description
+        url = 'https://github.com/wwalery/db2dto'
+        groupId project.group
+        artifactId project.name
+        version project.version
+        inceptionYear '2020'
+        licenses {
+          license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+          }
+        }
+        developers {
+          developer {
+            id = 'walery'
+            name = 'Walery Wysotsky'
+            email = 'dev@wysotsky.info'
+          }
+        }
+        scm {
+          connection = 'scm:git:git://github.com:wwalery/db2dto.git'
+          developerConnection = 'scm:git:ssh://github.com:wwalery/db2dto.git'
+          url = 'https://github.com/wwalery/db2dto/tree/master'
+        }
+      }
+    }.writeTo("pom.xml")
+  }
+}
+
+
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
 shadowJar {
   dependsOn copyResources
-  baseName = 'db2dto'
+
+  baseName = name
   classifier = ''
+}
+
+signing {
+  sign configurations.archives
 }
 
 

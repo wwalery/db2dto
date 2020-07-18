@@ -1,6 +1,7 @@
 package {{ config.packageName(table.name) }};
 
 import java.util.Set;
+import java.util.List;
 import java.util.HashSet;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
@@ -22,11 +23,11 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   private final Set<String> changedFields = new HashSet();
 
 {% for column in table.columns %}
-  private {{ column.javaType }} {{ column.javaFieldName }};
+  private {{ column.javaType | raw }} {{ column.javaFieldName }};
 {% endfor %}
 
 {% for column in config.fields(table.name) %}
-  private {{ column.javaType }} {{ column.javaFieldName }};
+  private {{ column.javaType | raw }} {{ column.javaFieldName }};
 {% endfor %}
 
 

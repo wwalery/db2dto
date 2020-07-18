@@ -1,6 +1,5 @@
 package org.wwapp.db2dto;
 
-import com.google.common.base.CaseFormat;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.BufferedReader;
@@ -42,6 +41,7 @@ public class Processor {
   private static final String CONFIG = "config";
   private static final String EXT_JAVA = ".java";
   private static final String SPACE = " ";
+  private static final String TYPE_TABLE = "TABLE";
 
   @Setter private Config config;
 
@@ -97,15 +97,14 @@ public class Processor {
       DatabaseMetaData metadata = jdbcConnection.getMetaData();
       try (ResultSet rs = metadata.getTables(null, config.dbSchema, PERCENT, null)) {
         while (rs.next()) {
-          DBTable table = new DBTable();
-          String tableName = rs.getString("TABLE_NAME");
-          table.name = tableName.toLowerCase();
-          table.javaName =
-              config.getClassPrefix(table.name)
-                  + CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, table.name.toLowerCase())
-                  + config.getClassSuffix(table.name);
+          DBTable table = new DBTable(rs);
+          LOG.debug(table.toString());
+          if (!TYPE_TABLE.equals(table.type)) {
+            continue;
+          }
 
-          try (ResultSet rsColumns = metadata.getColumns(null, null, tableName, PERCENT)) {
+          try (ResultSet rsColumns =
+              metadata.getColumns(null, config.dbSchema, table.realName, PERCENT)) {
             table.columns = new ArrayList<>();
             while (rsColumns.next()) {
               table.columns.add(new DBColumn(rsColumns));

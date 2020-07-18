@@ -58,7 +58,15 @@ public class DBColumn {
     description = rs.getString("REMARKS");
     javaType = Config.getCONFIG().getFieldTypes(tableName).get(name);
     if (javaType == null) {
-      javaType = guessJavaType();
+      String sqlMappedType = Config.getCONFIG().sqlTypes.get(sqlTypeName);
+      if (sqlMappedType == null) {
+        javaType = guessJavaType();
+      } else {
+        javaType = sqlMappedType;
+        if (sqlType == Types.ARRAY) {
+          javaType = Config.getCONFIG().arrayAsList ? "List<" + javaType + ">" : javaType + "[]";
+        }
+      }
     }
   }
 

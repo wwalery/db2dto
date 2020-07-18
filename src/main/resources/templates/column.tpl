@@ -48,7 +48,7 @@
 {% endif %}  
   
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
-  public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ column.javaType }} newValue) {
+  public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ column.javaType | raw }} newValue) {
     if (!java.util.Objects.equals(newValue, {{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue;
       changedFields.add("{{ column.name }}");
@@ -56,7 +56,7 @@
     return this;
   }
 
-  public {{ table.javaName }} set{{ column.javaPropertyName }}NotNull(final {{ column.javaType }} newValue) {
+  public {{ table.javaName }} set{{ column.javaPropertyName }}NotNull(final {{ column.javaType | raw }} newValue) {
     if (!java.util.Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = newValue;
       changedFields.add("{{ column.name }}");
@@ -67,7 +67,7 @@
 
 {% endif %}  
 
-  public {{ column.javaType }} get{{ column.javaPropertyName }}() {
+  public {{ column.javaType | raw }} get{{ column.javaPropertyName }}() {
     return this.{{ column.javaFieldName }};
   }
 
