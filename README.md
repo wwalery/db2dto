@@ -1,6 +1,6 @@
 # db2dto
 
-Generate advanced DTO Java class from database
+Generate advanced DTO Java classes from database
 
 Generated classes based on database metadata (schema) with flexible settings.
 
