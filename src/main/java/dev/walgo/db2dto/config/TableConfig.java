@@ -1,4 +1,4 @@
-package org.wwapp.db2dto.config;
+package dev.walgo.db2dto.config;
 
 import java.util.HashMap;
 import java.util.Map;

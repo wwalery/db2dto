@@ -1,7 +1,8 @@
-package org.wwapp.db2dto;
+package dev.walgo.db2dto;
 
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import dev.walgo.db2dto.config.Config;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,7 +28,6 @@ import javax.tools.ToolProvider;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 @Slf4j

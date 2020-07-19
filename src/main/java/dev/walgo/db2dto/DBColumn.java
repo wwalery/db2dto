@@ -1,16 +1,16 @@
-package org.wwapp.db2dto;
+package dev.walgo.db2dto;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
+import dev.walgo.db2dto.config.Config;
+import dev.walgo.db2dto.plugin.IPlugin;
+import dev.walgo.db2dto.plugin.PluginHandler;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.wwapp.db2dto.config.Config;
-import org.wwapp.db2dto.plugin.IPlugin;
-import org.wwapp.db2dto.plugin.PluginHandler;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 @ToString

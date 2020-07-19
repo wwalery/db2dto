@@ -1,4 +1,4 @@
-package org.wwapp.db2dto.plugin;
+package dev.walgo.db2dto.plugin;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class PluginHandler {
 
   private static void initPlugins() {
     plugins = new ArrayList<>();
-    Reflections reflections = new Reflections("org.wwapp.db2dto", new SubTypesScanner(true));
+    Reflections reflections = new Reflections("", new SubTypesScanner(true));
     try {
       Set<Class<? extends IPlugin>> pluginClasses = reflections.getSubTypesOf(IPlugin.class);
       for (Class<? extends IPlugin> pluginClass : pluginClasses) {

@@ -2,10 +2,10 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.wwapp</groupId>
+  <groupId>dev.walgo</groupId>
   <artifactId>db2dto</artifactId>
   <version>0.1.0</version>
-  <name>org.wwapp:db2dto</name>
+  <name>dev.walgo:db2dto</name>
   <description>Flexible DTO Java classes generator. Generate classes from database metadata (schema).</description>
   <url>https://github.com/wwalery/db2dto</url>
   <inceptionYear>2020</inceptionYear>

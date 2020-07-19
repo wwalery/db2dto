@@ -1,6 +1,6 @@
-package org.wwapp.db2dto.plugin;
+package dev.walgo.db2dto.plugin;
 
-import org.wwapp.db2dto.DBColumn;
+import dev.walgo.db2dto.DBColumn;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 public interface IPlugin {

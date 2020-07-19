@@ -20,7 +20,7 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   private final static Set<String> FIELD_NAMES = Stream.of({% for column in table.columns %}"{{ column.name }}"{% if not loop.last %}, {% endif %}
 {% endfor %}).collect(Collectors.toSet());
 
-  private final Set<String> changedFields = new HashSet();
+  private final Set<String> changedFields = new HashSet<>();
 
 {% for column in table.columns %}
   private {{ column.javaType | raw }} {{ column.javaFieldName }};

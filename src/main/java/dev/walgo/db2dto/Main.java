@@ -1,6 +1,7 @@
-package org.wwapp.db2dto;
+package dev.walgo.db2dto;
 
 import com.google.gson.Gson;
+import dev.walgo.db2dto.config.Config;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.apache.commons.cli.CommandLine;
@@ -9,7 +10,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 public class Main {
@@ -79,7 +79,7 @@ public class Main {
     CommandLine cmd = parser.parse(options, args);
     if (cmd.hasOption(OPTION_HELP)) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("", options);
+      formatter.printHelp(Main.class.getName(), options);
       return;
     }
     String configFile = "db2dto.conf";

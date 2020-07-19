@@ -1,6 +1,6 @@
-package org.wwapp.db2dto;
+package dev.walgo.db2dto;
 
-import org.wwapp.db2dto.plugin.IPlugin;
+import dev.walgo.db2dto.plugin.IPlugin;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 public class TestPlugin implements IPlugin {

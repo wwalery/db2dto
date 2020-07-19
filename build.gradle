@@ -17,7 +17,7 @@ apply plugin: 'signing'
 apply plugin: 'com.github.sherter.google-java-format'
 apply plugin: "com.github.johnrengelman.shadow"
 
-mainClassName = 'org.wwapp.db2dto.Main'
+mainClassName = 'dev.walgo.db2dto.Main'
 ext.javaVersion = JavaVersion.VERSION_11
 
 idea.module.downloadJavadoc = true
@@ -117,38 +117,42 @@ task copyResources(type: Copy) {
   from('./resources')
 }
 
+
+
+def pomContent = {
+  name "${project.group}:${project.name}"
+  description project.description
+  url = 'https://github.com/wwalery/db2dto'
+  groupId project.group
+  artifactId project.name
+  version project.version
+  inceptionYear '2020'
+  packaging 'jar'
+  licenses {
+    license {
+      name 'The Apache Software License, Version 2.0'
+      url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+      distribution 'repo'
+    }
+  }
+  developers {
+    developer {
+      id = 'walery'
+      name = 'Walery Wysotsky'
+      email = 'dev@wysotsky.info'
+    }
+  }
+  scm {
+    connection = 'scm:git:git://github.com:wwalery/db2dto.git'
+    developerConnection = 'scm:git:ssh://github.com:wwalery/db2dto.git'
+    url = 'https://github.com/wwalery/db2dto/tree/master'
+  }
+}
+
+
 task pom {
   doLast {
-    pom {
-      project {
-        name "${project.group}:${project.name}"
-        description project.description
-        url = 'https://github.com/wwalery/db2dto'
-        groupId project.group
-        artifactId project.name
-        version project.version
-        inceptionYear '2020'
-        licenses {
-          license {
-            name 'The Apache Software License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-            distribution 'repo'
-          }
-        }
-        developers {
-          developer {
-            id = 'walery'
-            name = 'Walery Wysotsky'
-            email = 'dev@wysotsky.info'
-          }
-        }
-        scm {
-          connection = 'scm:git:git://github.com:wwalery/db2dto.git'
-          developerConnection = 'scm:git:ssh://github.com:wwalery/db2dto.git'
-          url = 'https://github.com/wwalery/db2dto/tree/master'
-        }
-      }
-    }.writeTo("pom.xml")
+    pom { project pomContent }.writeTo("pom.xml")
   }
 }
 
@@ -164,13 +168,12 @@ task sourcesJar(type: Jar) {
 }
 
 artifacts {
-    archives javadocJar, sourcesJar
+  archives javadocJar, sourcesJar
 }
 
 shadowJar {
   dependsOn copyResources
-
-  baseName = name
+//  baseName = name
   classifier = ''
 }
 
@@ -192,3 +195,26 @@ test {
     }
   }
 }
+
+uploadArchives {
+//  def props = new Properties()
+//  props.load(new FileInputStream(rootProject.file("gradle.local.properties")))
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//        authentication(userName: props['ossrhUsername'], password: props['ossrhPassword'])
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+//        authentication(userName: props['ossrhUsername'], password: props['ossrhPassword'])
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom { project pomContent }
+    }
+  }
+}
+

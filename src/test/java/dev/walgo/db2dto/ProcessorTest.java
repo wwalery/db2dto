@@ -1,6 +1,7 @@
-package org.wwapp.db2dto;
+package dev.walgo.db2dto;
 
 import com.google.gson.Gson;
+import dev.walgo.db2dto.config.Config;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,7 +22,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.wwapp.db2dto.config.Config;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 @Slf4j

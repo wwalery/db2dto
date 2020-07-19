@@ -1,6 +1,8 @@
-package org.wwapp.db2dto.config;
+package dev.walgo.db2dto.config;
 
 import com.google.common.base.Strings;
+import dev.walgo.db2dto.DBColumn;
+import dev.walgo.db2dto.DBTable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +11,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.Getter;
-import org.wwapp.db2dto.DBColumn;
-import org.wwapp.db2dto.DBTable;
 
 /**
  * Common configuration.
