@@ -3,8 +3,7 @@ package {{ config.packageName(table.name) }};
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
+import java.util.Map;
 {% if (config.packageName("") != config.packageName(table.name)) %}
 import {{ config.packageName("") }}.{{ config.baseInterfaceName }};
 {% endif %}
@@ -17,8 +16,7 @@ import {{ enum }};
 
 public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% for interface in config.getInterfaces(table.name) %}, {{ interface }}{% endfor %} {
 
-  private final static Set<String> FIELD_NAMES = Stream.of({% for column in table.columns %}"{{ column.name }}"{% if not loop.last %}, {% endif %}
-{% endfor %}).collect(Collectors.toSet());
+  private final static Map<String, String> FIELDS = Map.ofEntries({% for column in table.columns %}Map.entry("{{ column.name }}","{{ column.sqlTypeName }}"){% if not loop.last %}, {% endif %}{% endfor %});
 
   private final Set<String> changedFields = new HashSet<>();
 
@@ -49,7 +47,15 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
 
 
   public Set<String> getFieldNames() {
-    return FIELD_NAMES;
+    return FIELDS.keySet();
+  }
+
+  public String getSQLType(final String fieldName) {
+    return FIELDS.get(fieldName);
+  }
+
+  public Map<String, String> getSQLFields() {
+    return FIELDS;
   }
 
 {% for column in table.columns %}

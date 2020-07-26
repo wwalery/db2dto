@@ -11,6 +11,10 @@
   }
 {% endif %}  
 
+  public String get{{ column.javaPropertyName }}SQLType() {
+    return "{{ column.sqlTypeName }}";
+  }
+
 {#
 // GET/SET boolean
 {% if (not config.isReadOnlyField(table.name, column.name)) %}
