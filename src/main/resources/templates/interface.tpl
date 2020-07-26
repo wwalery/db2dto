@@ -1,6 +1,7 @@
 package {{ config.packageName("") }};
 
 import java.util.Set;
+import java.util.Map;
 
 public interface {{ config.baseInterfaceName }} {
 
@@ -18,6 +19,17 @@ public interface {{ config.baseInterfaceName }} {
   
   // return all fields 
   Set<String> getFieldNames();
+
+  /**
+   * Gets SQL field type by its name.
+   */
+  String getSQLType(final String fieldName);
+
+  /**
+   * Gets Map between field name and SQL field type.
+   */
+  public Map<String, String> getSQLFields();
+
 
 }
 
