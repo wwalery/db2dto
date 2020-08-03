@@ -75,3 +75,7 @@
     return this.{{ column.javaFieldName }};
   }
 
+  public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
+    return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }} : {{ column.defaultValue | raw }};
+  }
+

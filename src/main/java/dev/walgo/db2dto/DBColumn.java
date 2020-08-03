@@ -18,8 +18,20 @@ import lombok.extern.slf4j.Slf4j;
 public class DBColumn {
 
   private static final String BIG_DECIMAL = "java.math.BigDecimal";
+  private static final String BIG_INTEGER = "java.math.BigInteger";
   private static final String STRING = "String";
   private static final String BOOLEAN = "Boolean";
+  private static final String BYTE_ARRAY = "byte[]";
+  private static final String BYTE = "Byte";
+  private static final String SQL_TIMESTAMP = "java.sql.Timestamp";
+  private static final String SQL_TIME = "java.sql.Time";
+  private static final String INTEGER = "Integer";
+  private static final String SQL_DATE = "java.sql.Date";
+  private static final String LONG = "Long";
+
+  private static final String VALUE_BOOLEAN = "false";
+  private static final String VALUE_BIG_DECIMAL = "java.math.BigDecimal.ZERO";
+  private static final String VALUE_STRING = "\"\"";
 
   public String name;
   public String tableName;
@@ -79,7 +91,7 @@ public class DBColumn {
     }
     switch (sqlType) {
       case Types.BIGINT:
-        return "Long";
+        return LONG;
       case Types.BIT:
         return BOOLEAN;
       case Types.BOOLEAN:
@@ -90,11 +102,11 @@ public class DBColumn {
       case Types.VARCHAR:
         return STRING;
       case Types.DATE:
-        return "java.sql.Date";
+        return SQL_DATE;
       case Types.DECIMAL:
       case Types.NUMERIC:
         if (digits == 0) {
-          return "java.math.BigInteger";
+          return BIG_INTEGER;
         } else {
           return BIG_DECIMAL;
         }
@@ -104,21 +116,57 @@ public class DBColumn {
         return BIG_DECIMAL;
       case Types.INTEGER:
       case Types.SMALLINT:
-        return "Integer";
+        return INTEGER;
       case Types.TIME:
-        return "java.sql.Time";
+        return SQL_TIME;
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
-        return "java.sql.Timestamp";
+        return SQL_TIMESTAMP;
       case Types.TINYINT:
-        return "Byte";
+        return BYTE;
       case Types.BINARY:
       case Types.VARBINARY:
       case Types.LONGVARBINARY:
-        return "byte[]";
+        return BYTE_ARRAY;
       default:
-        LOG.warn("Undefined java type for field [{}]", this);
+        LOG.warn("Undefined sql type for field [{}]", this);
         return STRING;
+    }
+  }
+
+  public String getDefaultValue() {
+    for (IPlugin plugin : PluginHandler.getPlugins()) {
+      String result = plugin.getDefaultValue(this);
+      if (!Strings.isNullOrEmpty(result)) {
+        return result;
+      }
+    }
+    switch (javaType) {
+      case LONG:
+        return "0L";
+      case BOOLEAN:
+        return VALUE_BOOLEAN;
+      case STRING:
+        return VALUE_STRING;
+      case SQL_DATE:
+        return "java.sql.Date.valueOf(java.time.LocalDate.now())";
+      case BIG_INTEGER:
+        return "java.math.BigInteger.ZERO";
+      case BIG_DECIMAL:
+        return VALUE_BIG_DECIMAL;
+      case INTEGER:
+        return "0";
+      case SQL_TIME:
+        return "java.sql.Time.valueOf(java.time.LocalTime.now())";
+      case SQL_TIMESTAMP:
+        return "java.sql.Timestamp.valueOf(java.time.LocalDateTime.now())";
+      case BYTE:
+        return "(byte) 0";
+      case BYTE_ARRAY:
+        return "new byte[0]";
+      default:
+        LOG.warn("Undefined java type for get default value for field [{}]", this);
+        return "new " + javaType + "()";
     }
   }
 }

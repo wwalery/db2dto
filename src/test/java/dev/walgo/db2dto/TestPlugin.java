@@ -15,4 +15,12 @@ public class TestPlugin implements IPlugin {
     }
     return null;
   }
+
+  @Override
+  public String getDefaultValue(DBColumn column) {
+    if (TABLE_2.equals(column.tableName) && FIELD_OBJECT.equals(column.name)) {
+      return "new " + TestClass.class.getName() + "()";
+    }
+    return null;
+  }
 }
