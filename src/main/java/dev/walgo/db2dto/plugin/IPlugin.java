@@ -6,12 +6,12 @@ import dev.walgo.db2dto.DBColumn;
 public interface IPlugin {
 
   /**
-   * Custom java type from SQL retriever.
+   * Fill fields {@link DBColumn#javaType } and {@link DBColumn#simpleJavaType } from SQL type.
    *
    * @param column
-   * @return Java type or null/empty
+   * @return TRUE if fields filled
    */
-  String getJavaType(DBColumn column);
+  boolean fillJavaType(DBColumn column);
 
   /**
    * Gets default value for column.

@@ -21,13 +21,20 @@ public class DBColumn {
   private static final String BIG_INTEGER = "java.math.BigInteger";
   private static final String STRING = "String";
   private static final String BOOLEAN = "Boolean";
+  private static final String BOOLEAN_SIMPLE = "boolean";
   private static final String BYTE_ARRAY = "byte[]";
   private static final String BYTE = "Byte";
+  private static final String BYTE_SIMPLE = "byte";
   private static final String SQL_TIMESTAMP = "java.sql.Timestamp";
   private static final String SQL_TIME = "java.sql.Time";
   private static final String INTEGER = "Integer";
+  private static final String INTEGER_SIMPLE = "int";
   private static final String SQL_DATE = "java.sql.Date";
   private static final String LONG = "Long";
+  private static final String LONG_SIMPLE = "long";
+  private static final String NEW = "new ";
+  private static final String NEW_OBJECT = "new %s()";
+  private static final String ARRAY_BRACKETS = "[]";
 
   private static final String VALUE_BOOLEAN = "false";
   private static final String VALUE_BIG_DECIMAL = "java.math.BigDecimal.ZERO";
@@ -40,6 +47,8 @@ public class DBColumn {
   public int sqlType;
   public String sqlTypeName;
   public String javaType;
+  public String simpleJavaType;
+  public boolean isSimpleType;
   public int size;
   public int digits;
   public boolean isNullable;
@@ -50,6 +59,7 @@ public class DBColumn {
     javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
     javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
     javaType = fieldJavaType;
+    simpleJavaType = fieldJavaType;
   }
 
   /**
@@ -72,65 +82,99 @@ public class DBColumn {
     if (javaType == null) {
       String sqlMappedType = Config.getCONFIG().sqlTypes.get(sqlTypeName);
       if (sqlMappedType == null) {
-        javaType = guessJavaType();
+        guessJavaType();
       } else {
         javaType = sqlMappedType;
         if (sqlType == Types.ARRAY) {
-          javaType = Config.getCONFIG().arrayAsList ? "List<" + javaType + ">" : javaType + "[]";
+          javaType =
+              Config.getCONFIG().arrayAsList ? "List<" + javaType + ">" : javaType + ARRAY_BRACKETS;
         }
+        simpleJavaType = javaType;
       }
+    } else {
+      simpleJavaType = javaType;
     }
   }
 
-  private String guessJavaType() {
+  private void guessJavaType() {
     for (IPlugin plugin : PluginHandler.getPlugins()) {
-      String result = plugin.getJavaType(this);
-      if (!Strings.isNullOrEmpty(result)) {
-        return result;
+      if (plugin.fillJavaType(this)) {
+        return;
       }
     }
     switch (sqlType) {
       case Types.BIGINT:
-        return LONG;
+        javaType = LONG;
+        simpleJavaType = LONG_SIMPLE;
+        isSimpleType = true;
+        break;
       case Types.BIT:
-        return BOOLEAN;
+        javaType = BOOLEAN;
+        simpleJavaType = BOOLEAN_SIMPLE;
+        isSimpleType = true;
+        break;
       case Types.BOOLEAN:
-        return BOOLEAN;
+        javaType = BOOLEAN;
+        simpleJavaType = BOOLEAN_SIMPLE;
+        isSimpleType = true;
+        break;
       case Types.CHAR:
       case Types.NCHAR:
       case Types.NVARCHAR:
       case Types.VARCHAR:
-        return STRING;
+        javaType = STRING;
+        simpleJavaType = STRING;
+        break;
       case Types.DATE:
-        return SQL_DATE;
+        javaType = SQL_DATE;
+        simpleJavaType = SQL_DATE;
+        break;
       case Types.DECIMAL:
       case Types.NUMERIC:
         if (digits == 0) {
-          return BIG_INTEGER;
+          javaType = BIG_INTEGER;
+          simpleJavaType = BIG_INTEGER;
         } else {
-          return BIG_DECIMAL;
+          javaType = BIG_DECIMAL;
+          simpleJavaType = BIG_DECIMAL;
         }
+        break;
       case Types.DOUBLE:
       case Types.FLOAT:
       case Types.REAL:
-        return BIG_DECIMAL;
+        javaType = BIG_DECIMAL;
+        simpleJavaType = BIG_DECIMAL;
+        break;
       case Types.INTEGER:
       case Types.SMALLINT:
-        return INTEGER;
+        javaType = INTEGER;
+        simpleJavaType = INTEGER_SIMPLE;
+        isSimpleType = true;
+        break;
       case Types.TIME:
-        return SQL_TIME;
+        javaType = SQL_TIME;
+        simpleJavaType = SQL_TIME;
+        break;
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
-        return SQL_TIMESTAMP;
+        javaType = SQL_TIMESTAMP;
+        simpleJavaType = SQL_TIMESTAMP;
+        break;
       case Types.TINYINT:
-        return BYTE;
+        javaType = BYTE;
+        simpleJavaType = BYTE_SIMPLE;
+        isSimpleType = true;
+        break;
       case Types.BINARY:
       case Types.VARBINARY:
       case Types.LONGVARBINARY:
-        return BYTE_ARRAY;
+        javaType = BYTE_ARRAY;
+        simpleJavaType = BYTE_ARRAY;
+        break;
       default:
         LOG.warn("Undefined sql type for field [{}]", this);
-        return STRING;
+        javaType = STRING;
+        simpleJavaType = STRING;
     }
   }
 
@@ -141,6 +185,11 @@ public class DBColumn {
         return result;
       }
     }
+    String predefinedType = Config.getCONFIG().getFieldTypes(tableName).get(name);
+    if (predefinedType != null) {
+      return String.format(NEW_OBJECT, predefinedType);
+    }
+
     switch (javaType) {
       case LONG:
         return "0L";
@@ -166,7 +215,13 @@ public class DBColumn {
         return "new byte[0]";
       default:
         LOG.warn("Undefined java type for get default value for field [{}]", this);
-        return "new " + javaType + "()";
+        if (sqlType == Types.ARRAY) {
+          return Config.getCONFIG().arrayAsList
+              ? "(new java.util.ArrayList<>())"
+              : NEW + javaType.replace(ARRAY_BRACKETS, "[0]");
+        } else {
+          return String.format(NEW_OBJECT, javaType);
+        }
     }
   }
 }

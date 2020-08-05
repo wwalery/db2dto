@@ -9,11 +9,13 @@ public class TestPlugin implements IPlugin {
   private static final String FIELD_OBJECT = "test_object";
 
   @Override
-  public String getJavaType(DBColumn column) {
+  public boolean fillJavaType(DBColumn column) {
     if (TABLE_2.equals(column.tableName) && FIELD_OBJECT.equals(column.name)) {
-      return TestClass.class.getName();
+      column.javaType = TestClass.class.getName();
+      column.simpleJavaType = TestClass.class.getName();
+      return true;
     }
-    return null;
+    return false;
   }
 
   @Override

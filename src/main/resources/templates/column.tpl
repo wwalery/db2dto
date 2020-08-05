@@ -1,4 +1,5 @@
-// {{ column.name }}
+// {{ column }}
+{% set columnType = column.isNullable ? column.javaType : column.simpleJavaType %}
 
 {% if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}Changed() {
@@ -44,7 +45,7 @@
     }
     return this;
   }
-{% endif %}  
+{%  endif %}  
 
   public {{ config.getEnum(table.name, column.name) }} get{{ column.javaPropertyName }}Enum() {
     return this.{{ column.javaFieldName }} == null ? null : {{ config.getEnum(table.name, column.name) }}.valueOf({{ column.javaFieldName }});
@@ -52,13 +53,18 @@
 {% endif %}  
   
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
-  public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ column.javaType | raw }} newValue) {
+  public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ columnType | raw }} newValue) {
+{%    if (column.isNullable and not column.isSimpleType) %}
     if (!java.util.Objects.equals(newValue, {{ column.javaFieldName }})) {
+{%    else %}
+    if (newValue != {{ column.javaFieldName }}) {
+{%    endif %}  
       this.{{ column.javaFieldName }} = newValue;
       changedFields.add("{{ column.name }}");
     }
     return this;
   }
+
 
   public {{ table.javaName }} set{{ column.javaPropertyName }}NotNull(final {{ column.javaType | raw }} newValue) {
     if (!java.util.Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
@@ -69,13 +75,15 @@
   }
 
 
-{% endif %}  
+{%  endif %}  
 
-  public {{ column.javaType | raw }} get{{ column.javaPropertyName }}() {
+  public {{ columnType | raw }} get{{ column.javaPropertyName }}() {
     return this.{{ column.javaFieldName }};
   }
 
+{%  if (column.isNullable) %}
   public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
     return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }} : {{ column.defaultValue | raw }};
   }
+{%  endif %}  
 
