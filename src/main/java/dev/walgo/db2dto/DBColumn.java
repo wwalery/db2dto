@@ -70,8 +70,8 @@ public class DBColumn {
   public DBColumn(ResultSet rs) throws SQLException {
     name = rs.getString("COLUMN_NAME").toLowerCase();
     tableName = rs.getString("TABLE_NAME").toLowerCase();
-    javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
-    javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
+    String alias = Config.getCONFIG().getFieldNames(tableName).getOrDefault(name, name);
+    setJavaNames(alias);
     sqlType = rs.getInt("DATA_TYPE");
     sqlTypeName = rs.getString("TYPE_NAME");
     size = rs.getInt("COLUMN_SIZE");
@@ -94,6 +94,12 @@ public class DBColumn {
     } else {
       simpleJavaType = javaType;
     }
+  }
+
+  private void setJavaNames(final String fieldName) {
+    String nameLC = fieldName.toLowerCase();
+    javaFieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, nameLC);
+    javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, nameLC);
   }
 
   private void guessJavaType() {

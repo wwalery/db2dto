@@ -107,7 +107,8 @@ public class Processor {
               metadata.getColumns(null, config.dbSchema, table.realName, PERCENT)) {
             table.columns = new ArrayList<>();
             while (rsColumns.next()) {
-              table.columns.add(new DBColumn(rsColumns));
+              DBColumn column = new DBColumn(rsColumns);
+              table.columns.add(column);
             }
           }
           tables.put(table.name, table);

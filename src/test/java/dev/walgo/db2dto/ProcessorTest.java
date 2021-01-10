@@ -36,6 +36,8 @@ public class ProcessorTest {
   private static final String FIELD_ENUM = "enum_field";
   private static final String FIELD_ENUM_2 = "enum_field_2";
   private static final String FIELD_INT = "read_only";
+  private static final String DECIMAL_FIELD_1 = "decimal_field_1";
+  private static final String DECIMAL_FIELD_2 = "decimal_field_2";
 
   private Connection conn;
 
@@ -65,18 +67,27 @@ public class ProcessorTest {
     //    Files.delete(Paths.get("testdb.tmp"));
   }
 
-  private void checkField(
-      Map<String, DBTable> tables, String table, String fieldName, String fieldType) {
-
-    Assert.assertTrue(tables.containsKey(table));
-    DBTable dbTable = tables.get(table);
+  private DBColumn findField(
+      Map<String, DBTable> tables, final String tableName, final String fieldName) {
+    Assert.assertTrue(tables.containsKey(tableName));
+    DBTable dbTable = tables.get(tableName);
     List<DBColumn> columns = dbTable.columns;
     Optional<DBColumn> field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
     Assert.assertTrue(field.isPresent());
-    Assert.assertEquals(fieldType, field.get().javaType);
+    return field.get();
   }
 
-  /** Test of execute method, of class Processor. */
+  private void checkField(
+      Map<String, DBTable> tables, String table, String fieldName, String fieldType) {
+    DBColumn field = findField(tables, table, fieldName);
+    Assert.assertEquals(fieldType, field.javaType);
+  }
+
+  /**
+   * Test of execute method, of class Processor.
+   *
+   * @throws java.lang.Exception
+   */
   @Test
   public void testExecute() throws Exception {
     String configStr = Files.readString(Paths.get("./examples/db2dto.conf"));
@@ -94,5 +105,15 @@ public class ProcessorTest {
     checkField(tables, TABLE_2, FIELD_ARRAY, TestType.class.getName());
     checkField(tables, TABLE_2, FIELD_ENUM_2, "String");
     checkField(tables, TABLE_2, FIELD_INT, "Integer");
+
+    // test original field name
+    DBColumn field = findField(tables, TABLE_1, DECIMAL_FIELD_1);
+    Assert.assertEquals("decimalField1", field.javaFieldName);
+    Assert.assertEquals("DecimalField1", field.javaPropertyName);
+
+    // test renamed field
+    field = findField(tables, TABLE_1, DECIMAL_FIELD_2);
+    Assert.assertEquals("extraField", field.javaFieldName);
+    Assert.assertEquals("ExtraField", field.javaPropertyName);
   }
 }

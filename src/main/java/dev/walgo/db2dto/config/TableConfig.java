@@ -46,4 +46,7 @@ public class TableConfig {
 
   /** Set field type forcibly. */
   Map<String, String> fieldTypes = new HashMap<>();
+
+  /** Rename field. */
+  Map<String, String> fieldNames = new HashMap<>();
 }

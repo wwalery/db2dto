@@ -384,6 +384,21 @@ public class Config {
     return result;
   }
 
+  /**
+   * Gets fields names.
+   *
+   * @param tableName
+   * @return
+   */
+  public Map<String, String> getFieldNames(String tableName) {
+    Map<String, String> result = new HashMap<>(common.fieldNames);
+    TableConfig table = tables.get(tableName);
+    if (table != null) {
+      result.putAll(table.fieldNames);
+    }
+    return result;
+  }
+
   public void check() {
     if (Strings.isNullOrEmpty(dbURL)) {
       throw new IllegalArgumentException("[dbURL] not defined");

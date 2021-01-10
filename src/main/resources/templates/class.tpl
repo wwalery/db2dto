@@ -3,6 +3,7 @@ package {{ config.packageName(table.name) }};
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 {% if (config.packageName("") != config.packageName(table.name)) %}
 import {{ config.packageName("") }}.{{ config.baseInterfaceName }};
@@ -29,7 +30,7 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
 {% endfor %}
 
 
-  public boolean hasChangedField(final String fieldName) {
+  public boolean isFieldChanged(final String fieldName) {
     return changedFields.contains(fieldName);
   }
 
@@ -57,6 +58,18 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   public Map<String, String> getSQLFields() {
     return FIELDS;
   }
+
+  public Map<String, Object> getValues(final boolean onlyChanged) {
+    Map<String, Object> result = new HashMap<>();
+{% for column in table.columns %}
+    if (!onlyChanged || changedFields.contains("{{ column.name }}")) {
+      result.put("{{ column.name }}", get{{ column.javaPropertyName }}());
+    }
+{% endfor %}
+    return result;
+  }
+
+
 
 {% for column in table.columns %}
 {% include "./column.tpl" %}

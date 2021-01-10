@@ -1,5 +1,10 @@
-# DB2DTO Copyright (c) 2020
+# DB2DTO Copyright (c) 2020 - 2021
 Author: Walery Wysotsky <dev@wysotsky.info>
+
+## [1.4.0] - 2021-01-10
+### Added
+- set specific method names instead of based on column name
+- templates: add method to class for return current values for all fields
 
 ## [1.3.0] - 2020-08-05
 ### Added

@@ -6,7 +6,7 @@ import java.util.Map;
 public interface {{ config.baseInterfaceName }} {
 
   // check that file changed
-  boolean hasChangedField(final String fieldName);
+  boolean isFieldChanged(final String fieldName);
   
   // Any fields changed
   boolean isChanged();
@@ -26,9 +26,14 @@ public interface {{ config.baseInterfaceName }} {
   String getSQLType(final String fieldName);
 
   /**
-   * Gets Map between field name and SQL field type.
+   * Gets Map between SQL field name and SQL field type.
    */
-  public Map<String, String> getSQLFields();
+  Map<String, String> getSQLFields();
+
+  /*
+  * Gets map SQL field name and current field value.
+  */
+  Map<String, Object> getValues(final boolean onlyChanged);
 
 
 }
