@@ -1,6 +1,10 @@
 # DB2DTO Copyright (c) 2020 - 2021
 Author: Walery Wysotsky <dev@wysotsky.info>
 
+## [1.6.0] - 2021-03-08
+### Changed
+- Replace Reflections library by WALib.ResourceUtils
+
 ## [1.5.0] - 2021-03-08
 ### Added
 - Detect simple types for additional fields and use it for non-nullable columns
