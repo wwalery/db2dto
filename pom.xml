@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dev.walgo</groupId>
   <artifactId>db2dto</artifactId>
-  <version>0.1.0</version>
+  <version>1.4.1</version>
   <name>dev.walgo:db2dto</name>
   <description>Flexible DTO Java classes generator. Generate classes from database metadata (schema).</description>
   <url>https://github.com/wwalery/db2dto</url>
@@ -86,7 +86,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
