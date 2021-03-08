@@ -206,7 +206,7 @@ public class Config {
   }
 
   /**
-   * Additional field (not existing int table) by table name.
+   * Additional field (not existing in table) by table name.
    *
    * @param tableName
    * @param fieldName

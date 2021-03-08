@@ -60,6 +60,12 @@ public class DBColumn {
     javaPropertyName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name.toLowerCase());
     javaType = fieldJavaType;
     simpleJavaType = fieldJavaType;
+    isSimpleType =
+        fieldJavaType.equals(BOOLEAN_SIMPLE)
+            || fieldJavaType.equals(BYTE_SIMPLE)
+            || fieldJavaType.equals(INTEGER_SIMPLE)
+            || fieldJavaType.equals(LONG_SIMPLE);
+    isNullable = !isSimpleType;
   }
 
   /**
@@ -112,17 +118,17 @@ public class DBColumn {
       case Types.BIGINT:
         javaType = LONG;
         simpleJavaType = LONG_SIMPLE;
-        isSimpleType = true;
+        isSimpleType = !isNullable;
         break;
       case Types.BIT:
         javaType = BOOLEAN;
         simpleJavaType = BOOLEAN_SIMPLE;
-        isSimpleType = true;
+        isSimpleType = !isNullable;
         break;
       case Types.BOOLEAN:
         javaType = BOOLEAN;
         simpleJavaType = BOOLEAN_SIMPLE;
-        isSimpleType = true;
+        isSimpleType = !isNullable;
         break;
       case Types.CHAR:
       case Types.NCHAR:
@@ -155,7 +161,7 @@ public class DBColumn {
       case Types.SMALLINT:
         javaType = INTEGER;
         simpleJavaType = INTEGER_SIMPLE;
-        isSimpleType = true;
+        isSimpleType = !isNullable;
         break;
       case Types.TIME:
         javaType = SQL_TIME;
@@ -169,7 +175,7 @@ public class DBColumn {
       case Types.TINYINT:
         javaType = BYTE;
         simpleJavaType = BYTE_SIMPLE;
-        isSimpleType = true;
+        isSimpleType = !isNullable;
         break;
       case Types.BINARY:
       case Types.VARBINARY:

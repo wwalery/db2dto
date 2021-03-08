@@ -38,8 +38,13 @@ public class ProcessorTest {
   private static final String FIELD_INT = "read_only";
   private static final String DECIMAL_FIELD_1 = "decimal_field_1";
   private static final String DECIMAL_FIELD_2 = "decimal_field_2";
+  private static final String FIELD_ADD_1 = "add_field";
+  private static final String FIELD_ADD_2 = "add_field_2";
+
+  private static final String TYPE_INTEGER = "Integer";
 
   private Connection conn;
+  private Config config;
 
   @Before
   public void before() throws SQLException, IOException, SqlToolError {
@@ -73,6 +78,10 @@ public class ProcessorTest {
     DBTable dbTable = tables.get(tableName);
     List<DBColumn> columns = dbTable.columns;
     Optional<DBColumn> field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
+    if (field.isEmpty()) {
+      columns = config.getFields(tableName);
+      field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
+    }
     Assert.assertTrue(field.isPresent());
     return field.get();
   }
@@ -92,7 +101,7 @@ public class ProcessorTest {
   public void testExecute() throws Exception {
     String configStr = Files.readString(Paths.get("./examples/db2dto.conf"));
     Gson gson = new Gson();
-    Config config = gson.fromJson(configStr, Config.class);
+    config = gson.fromJson(configStr, Config.class);
     config.dbURL = DB_URL;
     config.dbUser = DB_USER;
     config.dbSchema = "PUBLIC";
@@ -104,7 +113,7 @@ public class ProcessorTest {
     checkField(tables, TABLE_2, FIELD_OBJECT, TestClass.class.getName());
     checkField(tables, TABLE_2, FIELD_ARRAY, TestType.class.getName());
     checkField(tables, TABLE_2, FIELD_ENUM_2, "String");
-    checkField(tables, TABLE_2, FIELD_INT, "Integer");
+    checkField(tables, TABLE_2, FIELD_INT, TYPE_INTEGER);
 
     // test original field name
     DBColumn field = findField(tables, TABLE_1, DECIMAL_FIELD_1);
@@ -115,5 +124,17 @@ public class ProcessorTest {
     field = findField(tables, TABLE_1, DECIMAL_FIELD_2);
     Assert.assertEquals("extraField", field.javaFieldName);
     Assert.assertEquals("ExtraField", field.javaPropertyName);
+
+    // test additional type field
+    field = findField(tables, TABLE_1, FIELD_ADD_1);
+    Assert.assertFalse(field.isSimpleType);
+    Assert.assertTrue(field.isNullable);
+    Assert.assertEquals(TYPE_INTEGER, field.javaType);
+
+    // test simple type field
+    field = findField(tables, TABLE_1, FIELD_ADD_2);
+    Assert.assertTrue(field.isSimpleType);
+    Assert.assertFalse(field.isNullable);
+    Assert.assertEquals("int", field.javaType);
   }
 }

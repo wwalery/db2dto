@@ -1,5 +1,5 @@
 // {{ column }}
-{% set columnType = column.isNullable ? column.javaType : column.simpleJavaType %}
+{% set columnType = column.isSimpleType ? column.simpleJavaType : column.javaType  %}
 
 {% if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}Changed() {
@@ -66,6 +66,7 @@
   }
 
 
+{%    if (column.isNullable and not column.isSimpleType) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}NotNull(final {{ column.javaType | raw }} newValue) {
     if (!java.util.Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = newValue;
@@ -73,6 +74,7 @@
     }
     return this;
   }
+{%    endif %}  
 
 
 {%  endif %}  
@@ -81,7 +83,7 @@
     return this.{{ column.javaFieldName }};
   }
 
-{%  if (column.isNullable) %}
+{%  if (column.isNullable and not column.isSimpleType) %}
   public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
     return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }} : {{ column.defaultValue | raw }};
   }

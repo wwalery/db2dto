@@ -103,13 +103,13 @@ dependencies {
   implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
 
 
-  testImplementation  'junit:junit:4.13'
+  testImplementation  'junit:junit:4.13.1'
   
 // https://mvnrepository.com/artifact/org.hsqldb/hsqldb
   testImplementation group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
 // https://mvnrepository.com/artifact/org.hsqldb/sqltool
   testImplementation group: 'org.hsqldb', name: 'sqltool', version: '2.5.1'
-  
+
 }
 
 task copyResources(type: Copy) {
