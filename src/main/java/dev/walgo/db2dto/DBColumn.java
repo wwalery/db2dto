@@ -226,10 +226,22 @@ public class DBColumn {
       case BYTE_ARRAY:
         return "new byte[0]";
       default:
+        String test = "Map";
+        if (javaType.startsWith(test)) {
+          return "new HashMap<>()";
+        }
+        test = "List";
+        if (javaType.startsWith(test)) {
+          return "new ArrayList<>()";
+        }
+        test = "Set";
+        if (javaType.startsWith(test)) {
+          return "new HashSet<>()";
+        }
         LOG.warn("Undefined java type for get default value for field [{}]", this);
         if (sqlType == Types.ARRAY) {
           return Config.getCONFIG().arrayAsList
-              ? "(new java.util.ArrayList<>())"
+              ? "(new ArrayList<>())"
               : NEW + javaType.replace(ARRAY_BRACKETS, "[0]");
         } else {
           return String.format(NEW_OBJECT, javaType);

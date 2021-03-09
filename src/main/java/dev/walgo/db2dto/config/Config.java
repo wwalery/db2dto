@@ -68,6 +68,9 @@ public class Config {
   /** Generate ARRAY column as List. Otherwise - array ([]). */
   public boolean arrayAsList;
 
+  /** Plugin packages list * */
+  public final List<String> pluginPackages;
+
   /** Map between SQL type name and java type. */
   public Map<String, String> sqlTypes = new HashMap<>();
 
@@ -82,6 +85,7 @@ public class Config {
     this.common.classPrefix = "";
     this.common.classSuffix = "Data";
     this.common.packageName = "dto";
+    this.pluginPackages = new ArrayList<>();
     CONFIG = this;
     //    this.common.readOnlyFields = new TreeSet<>();
     //    this.common.interfaces = new HashSet<>();

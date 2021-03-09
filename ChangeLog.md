@@ -1,6 +1,11 @@
 # DB2DTO Copyright (c) 2020 - 2021
 Author: Walery Wysotsky <dev@wysotsky.info>
 
+## [1.7.0] - 2021-03-09
+### Added
+- Allow to use Map, Set and List in additional fields
+- Add pluginPackages to config
+
 ## [1.6.0] - 2021-03-08
 ### Changed
 - Replace Reflections library by WALib.ResourceUtils

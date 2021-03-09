@@ -1,10 +1,6 @@
 package {{ config.packageName(table.name) }};
 
-import java.util.Set;
-import java.util.List;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 {% if (config.packageName("") != config.packageName(table.name)) %}
 import {{ config.packageName("") }}.{{ config.baseInterfaceName }};
 {% endif %}

@@ -40,6 +40,9 @@ public class ProcessorTest {
   private static final String DECIMAL_FIELD_2 = "decimal_field_2";
   private static final String FIELD_ADD_1 = "add_field";
   private static final String FIELD_ADD_2 = "add_field_2";
+  private static final String FIELD_ADD_3 = "add_field_3";
+  private static final String FIELD_ADD_4 = "add_field_4";
+  private static final String FIELD_ADD_5 = "add_field_5";
 
   private static final String TYPE_INTEGER = "Integer";
 
@@ -136,5 +139,13 @@ public class ProcessorTest {
     Assert.assertTrue(field.isSimpleType);
     Assert.assertFalse(field.isNullable);
     Assert.assertEquals("int", field.javaType);
+
+    // test collections type field
+    field = findField(tables, TABLE_1, FIELD_ADD_3);
+    Assert.assertEquals("Map<String, String>", field.javaType);
+    field = findField(tables, TABLE_1, FIELD_ADD_4);
+    Assert.assertEquals("Set<String>", field.javaType);
+    field = findField(tables, TABLE_1, FIELD_ADD_5);
+    Assert.assertEquals("List<String>", field.javaType);
   }
 }

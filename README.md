@@ -66,6 +66,12 @@ for example, for interface conformity
       },
 ```
 
+  * additional fields could be:
+    * simple types: **int**, **boolean**, etc
+    * object types: **Integer**, **String**, etc
+    * collections: **Map**, **List** and **Set**
+    * complex types - any compile-time reachable from this class, with full package name, e.g: **other.package.BeanClass**
+  
 
   * set fields as enums:
 
@@ -208,7 +214,7 @@ dev.walgo.db2dto.Main command line:
     * -s,--schema <dbSchema>       Database schema.
     * -u,--user <dbUser>           Database user name.
 
-For execute generator via command line, you need to download **db2dto-0.1.0.jar** separatelly from the site, or build from the source via ./gradlew shadowJar, or insert all dependencies into classpath.
+For execute generator via command line, you need to download **db2dto-x.y.z.jar** separatelly from the site, or build from the source via ./gradlew shadowJar, or insert all dependencies into classpath.
 
 
   * via gradle task:
