@@ -1,6 +1,7 @@
 package {{ config.packageName(table.name) }};
 
 import java.util.*;
+import java.time.*;
 {% if (config.packageName("") != config.packageName(table.name)) %}
 import {{ config.packageName("") }}.{{ config.baseInterfaceName }};
 {% endif %}

@@ -2,7 +2,6 @@ package dev.walgo.db2dto.plugin;
 
 import dev.walgo.db2dto.DBColumn;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
 public interface IPlugin {
 
   /**

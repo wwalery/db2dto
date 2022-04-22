@@ -54,17 +54,22 @@
   
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ columnType | raw }} newValue) {
-{%    if (column.isNullable and not column.isSimpleType) %}
-    if (!Objects.equals(newValue, {{ column.javaFieldName }})) {
-{%    else %}
+{%    if (column.isSimpleType) %}
     if (newValue != {{ column.javaFieldName }}) {
-{%    endif %}  
+{%    else %}
+    if (!Objects.equals(newValue, {{ column.javaFieldName }})) {
+{%    endif %}
       this.{{ column.javaFieldName }} = newValue;
       changedFields.add("{{ column.name }}");
     }
     return this;
   }
 
+  public {{ table.javaName }} set{{ column.javaPropertyName }}Force(final {{ columnType | raw }} newValue) {
+    this.{{ column.javaFieldName }} = newValue;
+    changedFields.add("{{ column.name }}");
+    return this;
+  }
 
 {%    if (column.isNullable and not column.isSimpleType) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}NotNull(final {{ column.javaType | raw }} newValue) {
@@ -88,4 +93,40 @@
     return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }} : {{ column.defaultValue | raw }};
   }
 {%  endif %}  
+
+
+{% if (column.javaType == 'java.sql.Timestamp') %}
+{%   if (not config.isReadOnlyField(table.name, column.name)) %}
+  public {{ table.javaName }} set{{ column.javaPropertyName }}AsDateTime(final LocalDateTime newValue) {
+    if (!Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
+      this.{{ column.javaFieldName }} = java.sql.Timestamp.valueOf(newValue);
+      changedFields.add("{{ column.name }}");
+    }
+    return this;
+  }
+{%   endif %}  
+
+  public LocalDateTime get{{ column.javaPropertyName }}AsDateTime() {
+    return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }}.toLocalDateTime() : null;
+  }
+
+{% endif %}  
+
+
+{% if (column.javaType == 'java.sql.Date') %}
+{%   if (not config.isReadOnlyField(table.name, column.name)) %}
+  public {{ table.javaName }} set{{ column.javaPropertyName }}AsDate(final LocalDate newValue) {
+    if (!Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
+      this.{{ column.javaFieldName }} = java.sql.Date.valueOf(newValue);
+      changedFields.add("{{ column.name }}");
+    }
+    return this;
+  }
+{%   endif %}  
+
+  public LocalDate get{{ column.javaPropertyName }}AsDate() {
+    return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }}.toLocalDate() : null;
+  }
+
+{% endif %}  
 

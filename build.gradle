@@ -12,7 +12,7 @@ apply plugin: 'jacoco'
 apply plugin: 'application'
 apply plugin: 'idea'
 apply plugin: 'checkstyle'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'com.github.sherter.google-java-format'
 apply plugin: "com.github.johnrengelman.shadow"
@@ -77,13 +77,13 @@ task checkChanged {
 dependencies {
 
 // https://mvnrepository.com/artifact/org.projectlombok/lombok
-  compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
-  annotationProcessor "org.projectlombok:lombok:1.18.12"
-  testImplementation group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
-  testAnnotationProcessor "org.projectlombok:lombok:1.18.12"
+  compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+  annotationProcessor "org.projectlombok:lombok:1.18.24"
+  testImplementation group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+  testAnnotationProcessor "org.projectlombok:lombok:1.18.24"
 
 // https://mvnrepository.com/artifact/com.google.guava/guava
-  implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+  implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
 
 // https://mvnrepository.com/artifact/commons-cli/commons-cli
   implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
@@ -101,7 +101,7 @@ dependencies {
 
   implementation group: 'dev.walgo', name: 'walib', version: '0.4.0'
 
-  testImplementation  'junit:junit:4.13.1'
+  testImplementation  'junit:junit:4.13.2'
   
 // https://mvnrepository.com/artifact/org.hsqldb/hsqldb
   testImplementation group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
@@ -176,8 +176,12 @@ shadowJar {
 }
 
 signing {
-  sign configurations.archives
+    sign publishing.publications
 }
+
+//signing {
+//  sign configurations.archives
+//}
 
 
 test {
@@ -194,25 +198,50 @@ test {
   }
 }
 
-uploadArchives {
-//  def props = new Properties()
-//  props.load(new FileInputStream(rootProject.file("gradle.local.properties")))
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
 
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-//        authentication(userName: props['ossrhUsername'], password: props['ossrhPassword'])
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
+            artifact sourcesJar
+            artifact javadocJar
+        
+            pom {
+                packaging = "jar"
+                name.set("DB2DTO")
+                url.set("https://github.com/wwalery/db2dto")
+                description.set("Flexible DTO Java classes generator. Generate classes from database metadata (schema)")
+            
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                scm {
+                    connection.set("scm:https://github.com/wwalery/db2dto.git")
+                    developerConnection.set("scm:git@github.com:wwalery/db2dto.git")
+                    url.set("https://github.com/wwalery/db2dto")
+                }
+                developers {
+                    developer {
+                        id = 'wwalery'
+                        name = 'Valerii Vysotskyi'
+                        email = 'dev@wysotsky.info'
+                    }
+                }
+            }
 
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-//        authentication(userName: props['ossrhUsername'], password: props['ossrhPassword'])
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-
-      pom { project pomContent }
+        }
     }
-  }
+    repositories {
+        maven {
+            url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            credentials {
+                username ossrhUsername
+                password ossrhPassword
+            }
+        }
+    }
 }
 

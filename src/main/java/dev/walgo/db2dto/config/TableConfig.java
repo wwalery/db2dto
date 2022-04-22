@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
 public class TableConfig {
 
   /**

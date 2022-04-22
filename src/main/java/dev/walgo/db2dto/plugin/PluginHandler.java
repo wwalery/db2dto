@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
 @Slf4j
 public class PluginHandler {
 

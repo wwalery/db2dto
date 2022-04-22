@@ -12,7 +12,6 @@ import java.sql.Types;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
 @ToString
 @Slf4j
 public class DBColumn {
@@ -27,6 +26,8 @@ public class DBColumn {
   private static final String BYTE_SIMPLE = "byte";
   private static final String SQL_TIMESTAMP = "java.sql.Timestamp";
   private static final String SQL_TIME = "java.sql.Time";
+  private static final String LOCAL_DATE_TIME = "LocalDateTime";
+  private static final String LOCAL_DATE = "LocalDate";
   private static final String INTEGER = "Integer";
   private static final String INTEGER_SIMPLE = "int";
   private static final String SQL_DATE = "java.sql.Date";
@@ -221,6 +222,10 @@ public class DBColumn {
         return "java.sql.Time.valueOf(java.time.LocalTime.now())";
       case SQL_TIMESTAMP:
         return "java.sql.Timestamp.valueOf(java.time.LocalDateTime.now())";
+      case LOCAL_DATE:
+        return "LocalDate.now()";
+      case LOCAL_DATE_TIME:
+        return "LocalDateTime.now()";
       case BYTE:
         return "(byte) 0";
       case BYTE_ARRAY:

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.List;
 import lombok.ToString;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
 @ToString
 public class DBTable {
 

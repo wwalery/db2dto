@@ -12,11 +12,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.Getter;
 
-/**
- * Common configuration.
- *
- * @author Walery Wysotsky <dev@wysotsky.info>
- */
+/** Common configuration. */
 public class Config {
 
   @Getter private static Config CONFIG;
@@ -77,8 +73,10 @@ public class Config {
   /** Common data for all tables. */
   public final TableConfig common;
 
+  /** All tables. */
   public final Map<String, TableConfig> tables;
 
+  /** Common constructor */
   public Config() {
     this.common = new TableConfig();
     this.tables = new HashMap<>();
@@ -98,10 +96,22 @@ public class Config {
     common.classPrefix = classPrefixValue;
   }
 
+  /**
+   * Prefix for class.
+   *
+   * @param tableName table name
+   * @param classPrefixValue prefix for class, generated for given table
+   */
   public void setClassPrefix(String tableName, String classPrefixValue) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).classPrefix = classPrefixValue;
   }
 
+  /**
+   * Get prefix for class, generated for given table
+   *
+   * @param tableName table name
+   * @return class prefix
+   */
   public String getClassPrefix(String tableName) {
     TableConfig table = tables.get(tableName);
     if ((table != null) && (table.classPrefix != null)) {
@@ -111,6 +121,11 @@ public class Config {
     }
   }
 
+  /**
+   * Suffix for class.
+   *
+   * @param classSuffixValue suffix value
+   */
   public void setClassSuffix(String classSuffixValue) {
     common.classSuffix = classSuffixValue;
   }
@@ -135,8 +150,8 @@ public class Config {
   /**
    * Link package name to table name
    *
-   * @param tableName
-   * @param packageNameValue
+   * @param tableName table name
+   * @param packageNameValue package for given table
    */
   public void setPackageName(String tableName, String packageNameValue) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).packageName = packageNameValue;
@@ -145,8 +160,8 @@ public class Config {
   /**
    * Gets package name by table name or default.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return package name for table
    */
   public String getPackageName(String tableName) {
     TableConfig table = tables.get(tableName);
@@ -168,7 +183,7 @@ public class Config {
   /**
    * Register default (common) interface, for add to generated class.
    *
-   * @param interfaceClass
+   * @param interfaceClass interface class full name
    */
   public void useInterface(String interfaceClass) {
     common.interfaces.add(interfaceClass);
@@ -177,8 +192,8 @@ public class Config {
   /**
    * Register interface by table name.
    *
-   * @param tableName
-   * @param interfaceClass
+   * @param tableName table name
+   * @param interfaceClass interface class for table
    */
   public void useInterface(String tableName, String interfaceClass) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).interfaces.add(interfaceClass);
@@ -187,8 +202,8 @@ public class Config {
   /**
    * Gets interface list by table name or default.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return set of interfaces for table
    */
   public Set<String> getInterfaces(String tableName) {
     TableConfig table = tables.get(tableName);
@@ -202,8 +217,8 @@ public class Config {
   /**
    * Add field, for add to all generated class.
    *
-   * @param fieldName
-   * @param fieldType
+   * @param fieldName field name
+   * @param fieldType type for that field
    */
   public void addField(String fieldName, String fieldType) {
     common.additionalFields.put(fieldName, fieldType);
@@ -212,9 +227,9 @@ public class Config {
   /**
    * Additional field (not existing in table) by table name.
    *
-   * @param tableName
-   * @param fieldName
-   * @param fieldType
+   * @param tableName table name
+   * @param fieldName field name in table
+   * @param fieldType type for that field
    */
   public void addField(String tableName, String fieldName, String fieldType) {
     tables
@@ -226,8 +241,8 @@ public class Config {
   /**
    * Gets additional fields list by table name or default.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return fields in table
    */
   public List<DBColumn> getFields(String tableName) {
     TableConfig table = tables.get(tableName);
@@ -248,8 +263,8 @@ public class Config {
   /**
    * Consider field as enumerate, for generated classes for all tables.
    *
-   * @param fieldName
-   * @param enumType
+   * @param fieldName field name
+   * @param enumType enum class
    */
   public void asEnum(String fieldName, String enumType) {
     common.enumFields.put(fieldName, enumType);
@@ -258,9 +273,9 @@ public class Config {
   /**
    * Consider field as enumerate by table name.
    *
-   * @param tableName
-   * @param fieldName
-   * @param enumType
+   * @param tableName table name
+   * @param fieldName field name in table
+   * @param enumType enum class for field
    */
   public void asEnum(String tableName, String fieldName, String enumType) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).enumFields.put(fieldName, enumType);
@@ -269,8 +284,8 @@ public class Config {
   /**
    * Gets fields considered as enumerate.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return set of enums for table
    */
   public Map<String, String> getEnums(String tableName) {
     TableConfig table = tables.get(tableName);
@@ -293,7 +308,7 @@ public class Config {
   /**
    * Add field, for add to all generated class.
    *
-   * @param fieldName
+   * @param fieldName field name
    */
   public void addToStringIgnore(String fieldName) {
     common.toStringIgnoreFields.add(fieldName);
@@ -302,8 +317,8 @@ public class Config {
   /**
    * Gets list of fields, ignored in 'toString' method by table.
    *
-   * @param tableName
-   * @param fieldName
+   * @param tableName table name
+   * @param fieldName field name
    */
   public void addToStringIgnore(String tableName, String fieldName) {
     tables.computeIfAbsent(tableName, key -> new TableConfig()).toStringIgnoreFields.add(fieldName);
@@ -312,8 +327,8 @@ public class Config {
   /**
    * Gets additional fields list by table name or default.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return ignored fields
    */
   public Set<String> getToStringIgnoredFields(String tableName) {
     TableConfig table = tables.get(tableName);
@@ -352,8 +367,8 @@ public class Config {
   /**
    * Set field type forcibly for all tables.
    *
-   * @param fieldName
-   * @param enumType
+   * @param fieldName field name
+   * @param fieldType field type
    */
   public void asFieldType(String fieldName, String fieldType) {
     common.fieldTypes.put(fieldName, fieldType);
@@ -362,9 +377,9 @@ public class Config {
   /**
    * Set field type forcibly by table name.
    *
-   * @param tableName
-   * @param fieldName
-   * @paramfieldTypeenumType
+   * @param tableName table name
+   * @param fieldName field name
+   * @param fieldType field type
    */
   public void asFieldType(String tableName, String fieldName, String fieldType) {
     tables
@@ -376,8 +391,8 @@ public class Config {
   /**
    * Gets fields types.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return map field - type
    */
   public Map<String, String> getFieldTypes(String tableName) {
     Map<String, String> result = new HashMap<>(common.fieldTypes);
@@ -391,8 +406,8 @@ public class Config {
   /**
    * Gets fields names.
    *
-   * @param tableName
-   * @return
+   * @param tableName table name
+   * @return map field - name
    */
   public Map<String, String> getFieldNames(String tableName) {
     Map<String, String> result = new HashMap<>(common.fieldNames);
@@ -403,6 +418,7 @@ public class Config {
     return result;
   }
 
+  /** Configuration checker. */
   public void check() {
     if (Strings.isNullOrEmpty(dbURL)) {
       throw new IllegalArgumentException("[dbURL] not defined");

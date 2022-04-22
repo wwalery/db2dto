@@ -11,7 +11,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
-/** @author Walery Wysotsky <dev@wysotsky.info> */
 public class Main {
 
   private static final String OPTION_HELP = "h";
