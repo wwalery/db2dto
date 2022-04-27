@@ -99,13 +99,30 @@ for example, for interface conformity
     },
 ```
 
-  * set specific java type to field (by field name)
+  * set specific default value to field (by field name)
+
+```json
+      "fieldDefaults": {
+        "test_array": "new ArrayList<String>()"
+      }
+```
+
+  * set specific default value to specific field type (by sql type)
+
+```json
+      "typeDefaults": {
+        "timestamptz": "Instant.now()"
+      }
+```
+
+  * set specific default valuea type to field (by field name)
 
 ```json
       "fieldTypes": {
         "test_array": "dev.walgo.db2dto.TestType"
       }
 ```
+
 
 It's also possible to compile generated code immediatelly and create separate jar:
 

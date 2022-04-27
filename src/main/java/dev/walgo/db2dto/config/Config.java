@@ -364,6 +364,17 @@ public class Config {
     return table.readOnlyFields.contains(fieldName);
   }
 
+  public boolean isSyntheticField(final String tableName, final String fieldName) {
+    if (common.additionalFields.containsKey(fieldName)) {
+      return true;
+    }
+    TableConfig table = tables.get(tableName);
+    if (table == null) {
+      return false;
+    }
+    return table.additionalFields.containsKey(fieldName);
+  }
+
   /**
    * Set field type forcibly for all tables.
    *
@@ -414,6 +425,36 @@ public class Config {
     TableConfig table = tables.get(tableName);
     if (table != null) {
       result.putAll(table.fieldNames);
+    }
+    return result;
+  }
+
+  /**
+   * Gets fields defaults.
+   *
+   * @param tableName table name
+   * @return map field - name
+   */
+  public Map<String, String> getFieldDefaults(String tableName) {
+    Map<String, String> result = new HashMap<>(common.fieldDefaults);
+    TableConfig table = tables.get(tableName);
+    if (table != null) {
+      result.putAll(table.fieldDefaults);
+    }
+    return result;
+  }
+
+  /**
+   * Gets type defaults.
+   *
+   * @param tableName table name
+   * @return map field - name
+   */
+  public Map<String, String> getTypeDefaults(String tableName) {
+    Map<String, String> result = new HashMap<>(common.typeDefaults);
+    TableConfig table = tables.get(tableName);
+    if (table != null) {
+      result.putAll(table.typeDefaults);
     }
     return result;
   }

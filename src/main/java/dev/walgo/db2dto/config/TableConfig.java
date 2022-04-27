@@ -48,4 +48,10 @@ public class TableConfig {
 
   /** Rename field. */
   Map<String, String> fieldNames = new HashMap<>();
+
+  /** Field default value (for ...NotNull methods). */
+  Map<String, String> fieldDefaults = new HashMap<>();
+
+  /** Type default value (for ...NotNull methods). */
+  Map<String, String> typeDefaults = new HashMap<>();
 }

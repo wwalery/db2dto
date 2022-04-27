@@ -27,6 +27,7 @@ public class DBColumn {
   private static final String SQL_TIMESTAMP = "java.sql.Timestamp";
   private static final String SQL_TIME = "java.sql.Time";
   private static final String LOCAL_DATE_TIME = "LocalDateTime";
+  private static final String INSTANT = "Instant";
   private static final String LOCAL_DATE = "LocalDate";
   private static final String INTEGER = "Integer";
   private static final String INTEGER_SIMPLE = "int";
@@ -198,6 +199,15 @@ public class DBColumn {
         return result;
       }
     }
+    String defaultValue = Config.getCONFIG().getFieldDefaults(tableName).get(name);
+    if (defaultValue != null) {
+      return defaultValue;
+    }
+    defaultValue = Config.getCONFIG().getTypeDefaults(tableName).get(sqlTypeName);
+    if (defaultValue != null) {
+      return defaultValue;
+    }
+
     String predefinedType = Config.getCONFIG().getFieldTypes(tableName).get(name);
     if (predefinedType != null) {
       return String.format(NEW_OBJECT, predefinedType);
@@ -221,11 +231,13 @@ public class DBColumn {
       case SQL_TIME:
         return "java.sql.Time.valueOf(java.time.LocalTime.now())";
       case SQL_TIMESTAMP:
-        return "java.sql.Timestamp.valueOf(java.time.LocalDateTime.now())";
+        return "java.sql.Timestamp.from(java.time.Instant.now())";
       case LOCAL_DATE:
         return "LocalDate.now()";
       case LOCAL_DATE_TIME:
         return "LocalDateTime.now()";
+      case INSTANT:
+        return "Instant.now()";
       case BYTE:
         return "(byte) 0";
       case BYTE_ARRAY:
