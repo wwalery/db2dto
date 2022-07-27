@@ -7,6 +7,11 @@
     return this;
   }
 
+  public {{ table.javaName }} reset{{ column.javaPropertyName }}Changed() {
+    changedFields.remove("{{ column.name }}");
+    return this;
+  }
+
   public boolean is{{ column.javaPropertyName }}Changed() {
     return changedFields.contains("{{ column.name }}");
   }

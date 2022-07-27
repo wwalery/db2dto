@@ -72,32 +72,30 @@ task checkChanged {
   dependsOn checkstyleChanged
 }
 
-
-
 dependencies {
 
 // https://mvnrepository.com/artifact/org.projectlombok/lombok
-  compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
-  annotationProcessor "org.projectlombok:lombok:1.18.24"
-  testImplementation group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
-  testAnnotationProcessor "org.projectlombok:lombok:1.18.24"
+  compileOnly "org.projectlombok:lombok:${lombokVersion}"
+  annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+  testImplementation "org.projectlombok:lombok:${lombokVersion}"
+  testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
 // https://mvnrepository.com/artifact/com.google.guava/guava
-  implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+  implementation "com.google.guava:guava:${guavaVersion}"
 
 // https://mvnrepository.com/artifact/commons-cli/commons-cli
-  implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
+  implementation "commons-cli:commons-cli:${commonsCliVersion}"
 
-  implementation group: 'io.pebbletemplates', name: 'pebble', version: '3.1.4'
+  implementation "io.pebbletemplates:pebble:${pebbleVersion}"
 
-  implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+  implementation "org.slf4j:slf4j-api:${slf4jVersion}"
 // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-  implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+  implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
-  implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+  implementation "ch.qos.logback:logback-core:${logbackVersion}"
 
 // https://mvnrepository.com/artifact/com.google.code.gson/gson
-  implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+  implementation "com.google.code.gson:gson:${gsonVersion}"
 
   implementation group: 'dev.walgo', name: 'walib', version: '0.4.0'
 
