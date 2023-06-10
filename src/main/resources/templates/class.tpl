@@ -63,6 +63,11 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
       result.put("{{ column.name }}", get{{ column.javaPropertyName }}());
     }
 {% endfor %}
+{% for column in config.fields(table.name) %}
+    if (!onlyChanged || changedFields.contains("{{ column.name }}")) {
+      result.put("{{ column.name }}", get{{ column.javaPropertyName }}());
+    }
+{% endfor %}
     return result;
   }
 

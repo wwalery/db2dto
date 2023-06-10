@@ -10,20 +10,19 @@ import lombok.ToString;
 @ToString
 public class DBTable {
 
-  public String name;
-  public String realName;
-  public String javaName;
-  public String type;
+    public String name;
+    public String realName;
+    public String javaName;
+    public String type;
 
-  public List<DBColumn> columns;
+    public List<DBColumn> columns;
 
-  public DBTable(ResultSet rs) throws SQLException {
-    realName = rs.getString("TABLE_NAME");
-    type = rs.getString("TABLE_TYPE");
-    name = realName.toLowerCase();
-    javaName =
-        Config.getCONFIG().getClassPrefix(name)
-            + CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name)
-            + Config.getCONFIG().getClassSuffix(name);
-  }
+    public DBTable(ResultSet rs) throws SQLException {
+        realName = rs.getString("TABLE_NAME");
+        type = rs.getString("TABLE_TYPE");
+        name = realName.toLowerCase();
+        javaName = Config.getCONFIG().getClassPrefix(name)
+                + CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name)
+                + Config.getCONFIG().getClassSuffix(name);
+    }
 }

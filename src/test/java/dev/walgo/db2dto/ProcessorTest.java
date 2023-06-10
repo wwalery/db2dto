@@ -27,125 +27,124 @@ import org.junit.Test;
 @Slf4j
 public class ProcessorTest {
 
-  private static final String DB_USER = "sa";
-  private static final String DB_URL = "jdbc:hsqldb:mem:testdb";
-  private static final String TABLE_2 = "test_table_2";
-  private static final String TABLE_1 = "test_table_1";
-  private static final String FIELD_OBJECT = "test_object";
-  private static final String FIELD_ARRAY = "test_array";
-  private static final String FIELD_ENUM = "enum_field";
-  private static final String FIELD_ENUM_2 = "enum_field_2";
-  private static final String FIELD_INT = "read_only";
-  private static final String DECIMAL_FIELD_1 = "decimal_field_1";
-  private static final String DECIMAL_FIELD_2 = "decimal_field_2";
-  private static final String FIELD_ADD_1 = "add_field";
-  private static final String FIELD_ADD_2 = "add_field_2";
-  private static final String FIELD_ADD_3 = "add_field_3";
-  private static final String FIELD_ADD_4 = "add_field_4";
-  private static final String FIELD_ADD_5 = "add_field_5";
+    private static final String DB_USER = "sa";
+    private static final String DB_URL = "jdbc:hsqldb:mem:testdb";
+    private static final String TABLE_2 = "test_table_2";
+    private static final String TABLE_1 = "test_table_1";
+    private static final String FIELD_OBJECT = "test_object";
+    private static final String FIELD_ARRAY = "test_array";
+    private static final String FIELD_ENUM = "enum_field";
+    private static final String FIELD_ENUM_2 = "enum_field_2";
+    private static final String FIELD_INT = "read_only";
+    private static final String DECIMAL_FIELD_1 = "decimal_field_1";
+    private static final String DECIMAL_FIELD_2 = "decimal_field_2";
+    private static final String FIELD_ADD_1 = "add_field";
+    private static final String FIELD_ADD_2 = "add_field_2";
+    private static final String FIELD_ADD_3 = "add_field_3";
+    private static final String FIELD_ADD_4 = "add_field_4";
+    private static final String FIELD_ADD_5 = "add_field_5";
 
-  private static final String TYPE_INTEGER = "Integer";
+    private static final String TYPE_INTEGER = "Integer";
 
-  private Connection conn;
-  private Config config;
+    private Connection conn;
+    private Config config;
 
-  @Before
-  public void before() throws SQLException, IOException, SqlToolError {
-    conn = DriverManager.getConnection(DB_URL, DB_USER, "");
-    try (InputStream inputStream = new FileInputStream("src/test/resources/db/create_db.sql")) {
-      SqlFile sqlFile =
-          new SqlFile(
-              new InputStreamReader(inputStream),
-              "init",
-              System.out,
-              "UTF-8",
-              false,
-              new File("."));
-      sqlFile.setConnection(conn);
-      sqlFile.execute();
+    @Before
+    public void before() throws SQLException, IOException, SqlToolError {
+        conn = DriverManager.getConnection(DB_URL, DB_USER, "");
+        try (InputStream inputStream = new FileInputStream("src/test/resources/db/create_db.sql")) {
+            SqlFile sqlFile = new SqlFile(
+                    new InputStreamReader(inputStream),
+                    "init",
+                    System.out,
+                    "UTF-8",
+                    false,
+                    new File("."));
+            sqlFile.setConnection(conn);
+            sqlFile.execute();
+        }
     }
-  }
 
-  @After
-  public void after() throws SQLException, IOException {
-    conn.close();
-    //    Files.delete(Paths.get("testdb.log"));
-    //    Files.delete(Paths.get("testdb.properties"));
-    //    Files.delete(Paths.get("testdb.script"));
-    //    Files.delete(Paths.get("testdb.tmp"));
-  }
-
-  private DBColumn findField(
-      Map<String, DBTable> tables, final String tableName, final String fieldName) {
-    Assert.assertTrue(tables.containsKey(tableName));
-    DBTable dbTable = tables.get(tableName);
-    List<DBColumn> columns = dbTable.columns;
-    Optional<DBColumn> field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
-    if (field.isEmpty()) {
-      columns = config.getFields(tableName);
-      field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
+    @After
+    public void after() throws SQLException, IOException {
+        conn.close();
+        // Files.delete(Paths.get("testdb.log"));
+        // Files.delete(Paths.get("testdb.properties"));
+        // Files.delete(Paths.get("testdb.script"));
+        // Files.delete(Paths.get("testdb.tmp"));
     }
-    Assert.assertTrue(field.isPresent());
-    return field.get();
-  }
 
-  private void checkField(
-      Map<String, DBTable> tables, String table, String fieldName, String fieldType) {
-    DBColumn field = findField(tables, table, fieldName);
-    Assert.assertEquals(fieldType, field.javaType);
-  }
+    private DBColumn findField(
+            Map<String, DBTable> tables, final String tableName, final String fieldName) {
+        Assert.assertTrue(tables.containsKey(tableName));
+        DBTable dbTable = tables.get(tableName);
+        List<DBColumn> columns = dbTable.columns;
+        Optional<DBColumn> field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
+        if (field.isEmpty()) {
+            columns = config.getFields(tableName);
+            field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
+        }
+        Assert.assertTrue(field.isPresent());
+        return field.get();
+    }
 
-  /**
-   * Test of execute method, of class Processor.
-   *
-   * @throws java.lang.Exception
-   */
-  @Test
-  public void testExecute() throws Exception {
-    String configStr = Files.readString(Paths.get("./examples/db2dto.conf"));
-    Gson gson = new Gson();
-    config = gson.fromJson(configStr, Config.class);
-    config.dbURL = DB_URL;
-    config.dbUser = DB_USER;
-    config.dbSchema = "PUBLIC";
-    Processor instance = new Processor();
-    instance.setConfig(config);
-    instance.execute();
+    private void checkField(
+            Map<String, DBTable> tables, String table, String fieldName, String fieldType) {
+        DBColumn field = findField(tables, table, fieldName);
+        Assert.assertEquals(fieldType, field.javaType);
+    }
 
-    Map<String, DBTable> tables = instance.getTables();
-    checkField(tables, TABLE_2, FIELD_OBJECT, TestClass.class.getName());
-    checkField(tables, TABLE_2, FIELD_ARRAY, TestType.class.getName());
-    checkField(tables, TABLE_2, FIELD_ENUM_2, "String");
-    checkField(tables, TABLE_2, FIELD_INT, TYPE_INTEGER);
+    /**
+     * Test of execute method, of class Processor.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testExecute() throws Exception {
+        String configStr = Files.readString(Paths.get("./examples/db2dto.conf"));
+        Gson gson = new Gson();
+        config = gson.fromJson(configStr, Config.class);
+        config.dbURL = DB_URL;
+        config.dbUser = DB_USER;
+        config.dbSchema = "PUBLIC";
+        Processor instance = new Processor();
+        instance.setConfig(config);
+        instance.execute();
 
-    // test original field name
-    DBColumn field = findField(tables, TABLE_1, DECIMAL_FIELD_1);
-    Assert.assertEquals("decimalField1", field.javaFieldName);
-    Assert.assertEquals("DecimalField1", field.javaPropertyName);
+        Map<String, DBTable> tables = instance.getTables();
+        checkField(tables, TABLE_2, FIELD_OBJECT, TestClass.class.getName());
+        checkField(tables, TABLE_2, FIELD_ARRAY, TestType.class.getName());
+        checkField(tables, TABLE_2, FIELD_ENUM_2, "String");
+        checkField(tables, TABLE_2, FIELD_INT, TYPE_INTEGER);
 
-    // test renamed field
-    field = findField(tables, TABLE_1, DECIMAL_FIELD_2);
-    Assert.assertEquals("extraField", field.javaFieldName);
-    Assert.assertEquals("ExtraField", field.javaPropertyName);
+        // test original field name
+        DBColumn field = findField(tables, TABLE_1, DECIMAL_FIELD_1);
+        Assert.assertEquals("decimalField1", field.javaFieldName);
+        Assert.assertEquals("DecimalField1", field.javaPropertyName);
 
-    // test additional type field
-    field = findField(tables, TABLE_1, FIELD_ADD_1);
-    Assert.assertFalse(field.isSimpleType);
-    Assert.assertTrue(field.isNullable);
-    Assert.assertEquals(TYPE_INTEGER, field.javaType);
+        // test renamed field
+        field = findField(tables, TABLE_1, DECIMAL_FIELD_2);
+        Assert.assertEquals("extraField", field.javaFieldName);
+        Assert.assertEquals("ExtraField", field.javaPropertyName);
 
-    // test simple type field
-    field = findField(tables, TABLE_1, FIELD_ADD_2);
-    Assert.assertTrue(field.isSimpleType);
-    Assert.assertFalse(field.isNullable);
-    Assert.assertEquals("int", field.javaType);
+        // test additional type field
+        field = findField(tables, TABLE_1, FIELD_ADD_1);
+        Assert.assertFalse(field.isSimpleType);
+        Assert.assertTrue(field.isNullable);
+        Assert.assertEquals(TYPE_INTEGER, field.javaType);
 
-    // test collections type field
-    field = findField(tables, TABLE_1, FIELD_ADD_3);
-    Assert.assertEquals("Map<String, String>", field.javaType);
-    field = findField(tables, TABLE_1, FIELD_ADD_4);
-    Assert.assertEquals("Set<String>", field.javaType);
-    field = findField(tables, TABLE_1, FIELD_ADD_5);
-    Assert.assertEquals("List<String>", field.javaType);
-  }
+        // test simple type field
+        field = findField(tables, TABLE_1, FIELD_ADD_2);
+        Assert.assertTrue(field.isSimpleType);
+        Assert.assertFalse(field.isNullable);
+        Assert.assertEquals("int", field.javaType);
+
+        // test collections type field
+        field = findField(tables, TABLE_1, FIELD_ADD_3);
+        Assert.assertEquals("Map<String, String>", field.javaType);
+        field = findField(tables, TABLE_1, FIELD_ADD_4);
+        Assert.assertEquals("Set<String>", field.javaType);
+        field = findField(tables, TABLE_1, FIELD_ADD_5);
+        Assert.assertEquals("List<String>", field.javaType);
+    }
 }
