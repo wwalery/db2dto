@@ -253,13 +253,21 @@ public class Config {
         List<DBColumn> fields = new ArrayList<>(
                 common.additionalFields.entrySet()
                         .stream()
-                        .map(it -> new DBColumn(it.getKey(), it.getValue()))
+                        .map(it -> {
+                            DBColumn column = new DBColumn(it.getKey(), it.getValue());
+                            column.tableName = tableName;
+                            return column;
+                        })
                         .collect(Collectors.toList()));
         if (table != null) {
             fields.addAll(
                     table.additionalFields.entrySet()
                             .stream()
-                            .map(it -> new DBColumn(it.getKey(), it.getValue()))
+                            .map(it -> {
+                                DBColumn column = new DBColumn(it.getKey(), it.getValue());
+                                column.tableName = tableName;
+                                return column;
+                            })
                             .collect(Collectors.toList()));
         }
         return fields;
