@@ -14,7 +14,16 @@ import {{ enum }};
 
 public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% for interface in config.getInterfaces(table.name) %}, {{ interface }}{% endfor %} {
 
-  private final static Map<String, String> FIELDS = Map.ofEntries({% for column in table.columns %}Map.entry("{{ column.name }}","{{ column.sqlTypeName }}"){% if not loop.last %}, {% endif %}{% endfor %});
+{% for column in table.columns %}
+  public static final String {{ column.name | upper }} = "{{ column.name }}";
+{% endfor %}
+{% for column in config.fields(table.name) %}
+  public static final String {{ column.name | upper }} = "{{ column.name }}";
+{% endfor %}
+
+  private static final Map<String, String> FIELDS = Map.ofEntries(
+    {% for column in table.columns %}Map.entry({{ column.name | upper }},"{{ column.sqlTypeName }}"){% if not loop.last %}, 
+    {% endif %}{% endfor %});
 
   private final Set<String> changedFields = new HashSet<>();
 
@@ -59,13 +68,13 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   public Map<String, Object> getValues(final boolean onlyChanged) {
     Map<String, Object> result = new HashMap<>();
 {% for column in table.columns %}
-    if (!onlyChanged || changedFields.contains("{{ column.name }}")) {
-      result.put("{{ column.name }}", get{{ column.javaPropertyName }}());
+    if (!onlyChanged || changedFields.contains({{ column.name | upper }})) {
+      result.put({{ column.name | upper }}, get{{ column.javaPropertyName }}());
     }
 {% endfor %}
 {% for column in config.fields(table.name) %}
     if (!onlyChanged) {
-      result.put("{{ column.name }}", get{{ column.javaPropertyName }}());
+      result.put({{ column.name | upper }}, get{{ column.javaPropertyName }}());
     }
 {% endfor %}
     return result;
