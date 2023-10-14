@@ -1,8 +1,8 @@
 package dev.walgo.db2dto;
 
-import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import dev.walgo.db2dto.config.Config;
+import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
