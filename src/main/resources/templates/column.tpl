@@ -44,7 +44,10 @@
 
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ config.getEnum(table.name, column.name) }} newValue) {
-    if (!Objects.equals(newValue.name(), {{ column.javaFieldName }})) {
+    if ((newValue == null) && ({{ column.javaFieldName }} != null)) {
+      this.{{ column.javaFieldName }} = null;
+      changedFields.add({{ column.name | upper }});
+    } else if (!Objects.equals(newValue.name(), {{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue.name();
       changedFields.add({{ column.name | upper }});
     }
