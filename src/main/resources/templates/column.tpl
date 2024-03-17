@@ -26,8 +26,8 @@
 {% if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final boolean newValue) {
     byte value = newValue ?  (byte) 1 : (byte) 0);
-    if ({{ column.javaFieldName }} != value) {
-      {{ column.javaFieldName }} = value;
+    if (this.{{ column.javaFieldName }} != value) {
+      this.{{ column.javaFieldName }} = value;
       changedFields.add({{ column.name | upper }});
     }
     return this;
@@ -35,7 +35,7 @@
 {% endif %}
 
   public boolean get{{ column.javaPropertyName }}Bool() {
-    return {{ column.javaFieldName }} == 1;
+    return this.{{ column.javaFieldName }} == 1;
   }
 #}
   
@@ -45,11 +45,11 @@
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ config.getEnum(table.name, column.name) }} newValue) {
     if (newValue == null) {
-      if ({{ column.javaFieldName }} != null) {
+      if (this.{{ column.javaFieldName }} != null) {
         this.{{ column.javaFieldName }} = null;
         changedFields.add({{ column.name | upper }});
       }
-    } else if (!Objects.equals(newValue.name(), {{ column.javaFieldName }})) {
+    } else if (!Objects.equals(newValue.name(), this.{{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue.name();
       changedFields.add({{ column.name | upper }});
     }
@@ -58,22 +58,23 @@
 {%  endif %}
 
   public {{ config.getEnum(table.name, column.name) }} get{{ column.javaPropertyName }}Enum() {
-    return this.{{ column.javaFieldName }} == null ? null : {{ config.getEnum(table.name, column.name) }}.valueOf({{ column.javaFieldName }});
+    return this.{{ column.javaFieldName }} == null ? null : {{ config.getEnum(table.name, column.name) }}.valueOf(this.{{ column.javaFieldName }});
   }
 {% endif %}
   
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ columnType | raw }} newValue) {
 {%    if (column.isSimpleType) %}
-    if (newValue != {{ column.javaFieldName }}) {
+    if (newValue != this.{{ column.javaFieldName }}) {
 {%    else %}
-    if (!Objects.equals(newValue, {{ column.javaFieldName }})) {
+    if (!Objects.equals(newValue, this.{{ column.javaFieldName }})) {
 {%    endif %}
       this.{{ column.javaFieldName }} = newValue;
       changedFields.add({{ column.name | upper }});
     }
     return this;
   }
+
 
 {%    if (not config.isSyntheticField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}Force(final {{ columnType | raw }} newValue) {
@@ -84,15 +85,37 @@
 
   public {{ table.javaName }} set{{ column.javaPropertyName }}NotNull(final {{ column.javaType | raw }} newValue) {
 {%      if (column.isSimpleType) %}
-    if ((newValue != null) && (newValue != {{ column.javaFieldName }})) {
+    if ((newValue != null) && (newValue != this.{{ column.javaFieldName }})) {
 {%      else %}
-    if (!Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
+    if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
 {%      endif %}
       this.{{ column.javaFieldName }} = newValue;
       changedFields.add({{ column.name | upper }});
     }
     return this;
   }
+  
+  
+  public {{ table.javaName }} set{{ column.javaPropertyName }}(final Optional<{{ column.javaType | raw }}> newValue) {
+    if (newValue == null) {
+      return this;
+    }
+    if (newValue.isEmpty()) {
+{%      if (column.isSimpleType) %}
+      throw new RuntimeException("Null value doesn't allowed for field: {{ table.name }}.{{ column.name }}");
+{%      else %}
+      if (this.{{ column.javaFieldName }} != null) {
+        this.{{ column.javaFieldName }} = null;
+        changedFields.add({{ column.name | upper }});
+      }
+{%    endif %}
+    } else if (!Objects.equals(newValue.get(), this.{{ column.javaFieldName }})) {
+      this.{{ column.javaFieldName }} = newValue.get();
+      changedFields.add({{ column.name | upper }});
+    }
+    return this;
+  }
+  
 {%    endif %}
 {%  endif %}
 
@@ -110,7 +133,7 @@
 {% if (column.javaType == 'java.sql.Timestamp') %}
 {%   if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}AsDateTime(final LocalDateTime newValue) {
-    if (!Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
+    if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = java.sql.Timestamp.valueOf(newValue);
       changedFields.add({{ column.name | upper }});
     }
@@ -118,7 +141,7 @@
   }
 
   public {{ table.javaName }} set{{ column.javaPropertyName }}AsInstant(final Instant newValue) {
-    if (!Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
+    if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = java.sql.Timestamp.from(newValue);
       changedFields.add({{ column.name | upper }});
     }
@@ -141,7 +164,7 @@
 {% if (column.javaType == 'java.sql.Date') %}
 {%   if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}AsDate(final LocalDate newValue) {
-    if (!Objects.equals(newValue, {{ column.javaFieldName }}) && (newValue != null)) {
+    if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = java.sql.Date.valueOf(newValue);
       changedFields.add({{ column.name | upper }});
     }
