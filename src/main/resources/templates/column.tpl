@@ -96,6 +96,13 @@
   }
   
   
+  /**
+  * Update field value via Optional - only when the previous value is not the same.
+  *
+  * if newValue is null - data is not set
+  * if newValue is empty - data is set to null (if previous value is not null)
+  * else - set data from newValue (if previous value is not equal to newValue)
+  */
   public {{ table.javaName }} set{{ column.javaPropertyName }}Optional(final Optional<{{ column.javaType | raw }}> newValue) {
     if (newValue == null) {
       return this;
@@ -113,6 +120,30 @@
       this.{{ column.javaFieldName }} = newValue.get();
       changedFields.add({{ column.name | upper }});
     }
+    return this;
+  }
+
+  /**
+  * Update field value via Optional.
+  *
+  * if newValue is null - data is not set
+  * if newValue is empty - data is set to null
+  * else - set data from newValue
+  */
+  public {{ table.javaName }} set{{ column.javaPropertyName }}OptionalForced(final Optional<{{ column.javaType | raw }}> newValue) {
+    if (newValue == null) {
+      return this;
+    }
+    if (newValue.isEmpty()) {
+{%      if (column.isSimpleType) %}
+      throw new RuntimeException("Null value doesn't allowed for field: {{ table.name }}.{{ column.name }}");
+{%      else %}
+      this.{{ column.javaFieldName }} = null;
+{%    endif %}
+    } else {
+      this.{{ column.javaFieldName }} = newValue.get();
+    }
+    changedFields.add({{ column.name | upper }});
     return this;
   }
   
