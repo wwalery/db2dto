@@ -96,7 +96,7 @@
   }
   
   
-  public {{ table.javaName }} set{{ column.javaPropertyName }}(final Optional<{{ column.javaType | raw }}> newValue) {
+  public {{ table.javaName }} set{{ column.javaPropertyName }}Optional(final Optional<{{ column.javaType | raw }}> newValue) {
     if (newValue == null) {
       return this;
     }
