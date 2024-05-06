@@ -15,6 +15,15 @@ Some common settings for generated code:
   },
 ```
 
+  * **classPrefix** - class name prefix
+  * **classSuffix** - class name suffix
+  * **readOnlyFields** - don't generate setters for these columnt
+  * **packageName** - name of java package
+  * **columnsOrder** - generate columns in this order
+    * **ALPHA** - columns sorted by name
+    * **TABLE** - order as in table
+  * **useDefaults** - Use default column value as initial value from DB in generated classes
+
 
 You have ability to set specific behavior from global sql types:
 

@@ -1,8 +1,11 @@
 package dev.walgo.db2dto.plugin;
 
 import dev.walgo.db2dto.DBColumn;
+import dev.walgo.walib.db.DBInfo;
 
 public interface IPlugin {
+
+    boolean usePlugin(DBInfo info);
 
     /**
      * Fill fields {@link DBColumn#javaType } and {@link DBColumn#simpleJavaType } from SQL type.

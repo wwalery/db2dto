@@ -1,5 +1,7 @@
 package dev.walgo.db2dto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.gson.Gson;
 import dev.walgo.db2dto.config.Config;
 import java.io.File;
@@ -15,7 +17,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.hsqldb.cmdline.SqlFile;
 import org.hsqldb.cmdline.SqlToolError;
 import org.junit.After;
@@ -24,8 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
-@Slf4j
 public class ProcessorTest {
+
+//    private static final Logger LOG = LoggerFactory.getLogger(ProcessorTest.class);
 
     private static final String DB_USER = "sa";
     private static final String DB_URL = "jdbc:hsqldb:mem:testdb";
@@ -84,7 +86,9 @@ public class ProcessorTest {
             columns = config.getFields(tableName);
             field = columns.stream().filter(it -> fieldName.equals(it.name)).findFirst();
         }
-        Assert.assertTrue(field.isPresent());
+        assertThat(field.isPresent())
+                .as("Field not found: table: [%s], field: [%s]".formatted(tableName, fieldName))
+                .isTrue();
         return field.get();
     }
 

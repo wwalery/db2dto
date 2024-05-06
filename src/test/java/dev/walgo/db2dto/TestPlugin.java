@@ -1,6 +1,7 @@
 package dev.walgo.db2dto;
 
 import dev.walgo.db2dto.plugin.IPlugin;
+import dev.walgo.walib.db.DBInfo;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
 public class TestPlugin implements IPlugin {
@@ -24,5 +25,10 @@ public class TestPlugin implements IPlugin {
             return "new " + TestClass.class.getName() + "()";
         }
         return null;
+    }
+
+    @Override
+    public boolean usePlugin(DBInfo info) {
+        return true;
     }
 }

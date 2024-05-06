@@ -10,12 +10,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import lombok.Getter;
 
 /** Common configuration. */
 public class Config {
 
-    @Getter
     private static Config CONFIG;
 
     // DB config
@@ -32,7 +30,7 @@ public class Config {
      * Path to templates for source generation.
      *
      * <p>
-     * './examples' by default
+     * './templates' by default
      */
     public String templateDir = "./templates";
 
@@ -95,6 +93,10 @@ public class Config {
         // this.common.additionalFields = new HashMap<>();
         // this.common.enumFields = new HashMap<>();
         // this.common.toStringIgnoreFields = new HashSet<>();
+    }
+
+    public static Config getCONFIG() {
+        return CONFIG;
     }
 
     public void setClassPrefix(String classPrefixValue) {
@@ -468,6 +470,34 @@ public class Config {
             result.putAll(table.typeDefaults);
         }
         return result;
+    }
+
+    /**
+     * Gets columns sort order.
+     *
+     * @param tableName table name
+     * @return map field - name
+     */
+    public TableConfig.ColumnOrder getColumnsOrder(String tableName) {
+        TableConfig table = tables.get(tableName);
+        if ((table != null) && (table.columnsOrder != null)) {
+            return table.columnsOrder;
+        }
+        return common.columnsOrder != null ? common.columnsOrder : TableConfig.ColumnOrder.TABLE;
+    }
+
+    /**
+     * Gets columns sort order.
+     *
+     * @param tableName table name
+     * @return map field - name
+     */
+    public boolean isUseDefaults(String tableName) {
+        TableConfig table = tables.get(tableName);
+        if ((table != null) && (table.useDefaults != null)) {
+            return table.useDefaults;
+        }
+        return common.useDefaults != null ? common.useDefaults : false;
     }
 
     /** Configuration checker. */

@@ -3,7 +3,7 @@ CREATE TABLE test_table_1 (
   enum_field VARCHAR(50),
   big_field VARCHAR(1000),
   read_only INT,
-  is_deleted TINYINT,
+  is_deleted TINYINT DEFAULT 0,
   double_field DOUBLE,
   char_field CHAR(10),
   date_field DATE,
@@ -12,7 +12,7 @@ CREATE TABLE test_table_1 (
   decimal_field_1 DECIMAL(5),
   decimal_field_2 DECIMAL(10,2),
   numeric_field NUMERIC,
-  boolean_field BOOLEAN,
+  boolean_field BOOLEAN DEFAULT true,
   smallint_field SMALLINT,
   bigint_field BIGINT,
   real_field REAL,
@@ -24,7 +24,7 @@ CREATE TABLE test_table_1 (
 
 CREATE TABLE test_table_2 (
   id INT NOT NULL,
-  enum_field_2 VARCHAR(50),
+  enum_field_2 VARCHAR(50) DEFAULT 'test',
   big_field_2 VARCHAR(1000),
   read_only INT,
   test_array INT ARRAY DEFAULT ARRAY[],

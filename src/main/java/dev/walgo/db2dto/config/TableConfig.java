@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Table generator configuration.
+ */
 public class TableConfig {
 
     /**
@@ -30,6 +33,12 @@ public class TableConfig {
      * 'dto' by default
      */
     String packageName;
+
+    /** Order of generated column. */
+    public ColumnOrder columnsOrder;
+
+    /** Use default column value from DB */
+    public Boolean useDefaults;
 
     /** List of read-only fields, common for all tables. */
     Set<String> readOnlyFields = new TreeSet<>();
@@ -57,4 +66,19 @@ public class TableConfig {
 
     /** Type default value (for ...NotNull methods). */
     Map<String, String> typeDefaults = new HashMap<>();
+
+    /**
+     * Column order type
+     */
+    public enum ColumnOrder {
+        /**
+         * Sorted in alphabet order
+         */
+        ALPHA,
+        /**
+         * Order as in table
+         */
+        TABLE
+    }
+
 }

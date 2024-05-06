@@ -1,20 +1,22 @@
 package dev.walgo.db2dto;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.base.Strings;
 import dev.walgo.db2dto.config.Config;
 import dev.walgo.db2dto.plugin.IPlugin;
 import dev.walgo.db2dto.plugin.PluginHandler;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import dev.walgo.walib.db.ColumnInfo;
+import dev.walgo.walib.db.DBInfo;
 import java.sql.Types;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Locale;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@ToString
-@Slf4j
 public class DBColumn {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DBColumn.class);
 
     private static final String BIG_DECIMAL = "java.math.BigDecimal";
     private static final String BIG_INTEGER = "java.math.BigInteger";
@@ -55,6 +57,10 @@ public class DBColumn {
     public int digits;
     public boolean isNullable;
     public String description;
+    public String defaultValue;
+    public int order;
+
+    private DBInfo dbInfo;
 
     public DBColumn(String fieldName, String fieldJavaType) {
         name = fieldName.toLowerCase();
@@ -72,33 +78,40 @@ public class DBColumn {
     /**
      * Convert result of Metadata.getColumns to column info object.
      *
-     * @param rs
+     * @param tableName
+     * @param columnInfo
      */
-    public DBColumn(ResultSet rs) throws SQLException {
-        name = rs.getString("COLUMN_NAME").toLowerCase();
-        tableName = rs.getString("TABLE_NAME").toLowerCase();
-        String alias = Config.getCONFIG().getFieldNames(tableName).getOrDefault(name, name);
+    public DBColumn(String tableName, ColumnInfo columnInfo, DBInfo dbInfo) {
+        this.dbInfo = dbInfo;
+        this.name = columnInfo.name().toLowerCase(Locale.ROOT); // rs.getString("COLUMN_NAME").toLowerCase();
+        this.tableName = tableName.toLowerCase(Locale.ROOT); // rs.getString("TABLE_NAME").toLowerCase();
+        String alias = Config.getCONFIG().getFieldNames(this.tableName).getOrDefault(this.name, this.name);
         setJavaNames(alias);
-        sqlType = rs.getInt("DATA_TYPE");
-        sqlTypeName = rs.getString("TYPE_NAME");
-        size = rs.getInt("COLUMN_SIZE");
-        digits = rs.getInt("DECIMAL_DIGITS");
-        isNullable = rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable;
-        description = rs.getString("REMARKS");
-        javaType = Config.getCONFIG().getFieldTypes(tableName).get(name);
-        if (javaType == null) {
-            String sqlMappedType = Config.getCONFIG().sqlTypes.get(sqlTypeName);
+        this.sqlType = columnInfo.type(); // rs.getInt("DATA_TYPE");
+        this.sqlTypeName = columnInfo.typeName(); // rs.getString("TYPE_NAME");
+        this.size = columnInfo.size(); // rs.getInt("COLUMN_SIZE");
+        this.digits = columnInfo.digits(); // rs.getInt("DECIMAL_DIGITS");
+        this.isNullable = columnInfo.isNullable(); // rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable;
+        this.description = columnInfo.comment(); // rs.getString("REMARKS");
+        this.defaultValue = columnInfo.defaultValue();
+        this.order = columnInfo.position();
+        this.javaType = Config.getCONFIG().getFieldTypes(this.tableName).get(this.name);
+        if (this.javaType == null) {
+            String sqlMappedType = Config.getCONFIG().sqlTypes.get(this.sqlTypeName);
             if (sqlMappedType == null) {
-                guessJavaType();
+                this.guessJavaType();
             } else {
-                javaType = sqlMappedType;
-                if (sqlType == Types.ARRAY) {
-                    javaType = Config.getCONFIG().arrayAsList ? "List<" + javaType + ">" : javaType + ARRAY_BRACKETS;
+                this.javaType = sqlMappedType;
+                if (this.sqlType == Types.ARRAY) {
+                    this.javaType = Config.getCONFIG().arrayAsList
+                            ? "List<" + this.javaType + ">"
+                            : this.javaType + ARRAY_BRACKETS;
                 }
-                simpleJavaType = javaType;
+                this.simpleJavaType = this.javaType;
+                this.defaultValue = null;
             }
         } else {
-            simpleJavaType = javaType;
+            this.simpleJavaType = this.javaType;
         }
     }
 
@@ -109,7 +122,8 @@ public class DBColumn {
     }
 
     private void guessJavaType() {
-        for (IPlugin plugin : PluginHandler.getPlugins()) {
+//        LOG.warn("Field pre: [{}]", this);
+        for (IPlugin plugin : PluginHandler.getPlugins(dbInfo)) {
             if (plugin.fillJavaType(this)) {
                 return;
             }
@@ -119,16 +133,30 @@ public class DBColumn {
                 javaType = LONG;
                 simpleJavaType = LONG_SIMPLE;
                 isSimpleType = !isNullable;
+                defaultValue = (defaultValue != null) && NumberUtils.isDigits(defaultValue)
+                        ? defaultValue
+                        : null;
                 break;
             case Types.BIT:
                 javaType = BOOLEAN;
                 simpleJavaType = BOOLEAN_SIMPLE;
                 isSimpleType = !isNullable;
+                defaultValue = (defaultValue != null) && NumberUtils.isDigits(defaultValue)
+                        ? (defaultValue.equals("0") ? "false" : "true")
+                        : null;
                 break;
             case Types.BOOLEAN:
                 javaType = BOOLEAN;
                 simpleJavaType = BOOLEAN_SIMPLE;
+                // Set boolean to nullable and remove default value to avoid set the same value as default
+                isNullable = true;
+                defaultValue = null;
                 isSimpleType = !isNullable;
+                if (defaultValue != null) {
+                    defaultValue = Boolean.toString(
+                            defaultValue.equalsIgnoreCase("true") ||
+                                    defaultValue.equalsIgnoreCase("y"));
+                }
                 break;
             case Types.CHAR:
             case Types.NCHAR:
@@ -136,6 +164,13 @@ public class DBColumn {
             case Types.VARCHAR:
                 javaType = STRING;
                 simpleJavaType = STRING;
+                if (defaultValue != null) {
+                    if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                        defaultValue = '"' + defaultValue.substring(1, defaultValue.length() - 1) + '"';
+                    } else {
+                        defaultValue = '"' + defaultValue + '"';
+                    }
+                }
                 break;
             case Types.DATE:
                 javaType = SQL_DATE;
@@ -150,60 +185,88 @@ public class DBColumn {
                     javaType = BIG_DECIMAL;
                     simpleJavaType = BIG_DECIMAL;
                 }
+                defaultValue = (defaultValue != null) && NumberUtils.isCreatable(defaultValue)
+                        ? defaultValue
+                        : null;
                 break;
             case Types.DOUBLE:
             case Types.FLOAT:
             case Types.REAL:
                 javaType = BIG_DECIMAL;
                 simpleJavaType = BIG_DECIMAL;
+                defaultValue = (defaultValue != null) && NumberUtils.isCreatable(defaultValue)
+                        ? defaultValue
+                        : null;
                 break;
             case Types.INTEGER:
             case Types.SMALLINT:
                 javaType = INTEGER;
                 simpleJavaType = INTEGER_SIMPLE;
                 isSimpleType = !isNullable;
+                defaultValue = (defaultValue != null) && NumberUtils.isDigits(defaultValue)
+                        ? defaultValue
+                        : null;
                 break;
             case Types.TIME:
                 javaType = SQL_TIME;
                 simpleJavaType = SQL_TIME;
+                defaultValue = null;
                 break;
             case Types.TIMESTAMP:
             case Types.TIMESTAMP_WITH_TIMEZONE:
                 javaType = SQL_TIMESTAMP;
                 simpleJavaType = SQL_TIMESTAMP;
+                defaultValue = null;
                 break;
             case Types.TINYINT:
                 javaType = BYTE;
                 simpleJavaType = BYTE_SIMPLE;
                 isSimpleType = !isNullable;
+                defaultValue = (defaultValue != null) && NumberUtils.isDigits(defaultValue)
+                        ? defaultValue
+                        : null;
                 break;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
                 javaType = BYTE_ARRAY;
                 simpleJavaType = BYTE_ARRAY;
+                defaultValue = null;
+                break;
+            case Types.ARRAY:
+                javaType = Config.getCONFIG().arrayAsList
+                        ? "List<" + STRING + ">"
+                        : STRING + ARRAY_BRACKETS;
+                simpleJavaType = javaType;
+                defaultValue = null;
                 break;
             default:
                 LOG.warn("Undefined sql type for field [{}]", this);
                 javaType = STRING;
                 simpleJavaType = STRING;
+                defaultValue = null;
         }
+//        LOG.warn("Field: [{}]", this);
+    }
+
+    public boolean hasDefaultValue() {
+        return defaultValue != null;
     }
 
     public String getDefaultValue() {
-        for (IPlugin plugin : PluginHandler.getPlugins()) {
+        for (IPlugin plugin : PluginHandler.getPlugins(dbInfo)) {
             String result = plugin.getDefaultValue(this);
-            if (!Strings.isNullOrEmpty(result)) {
+            if (result != null) {
                 return result;
             }
         }
-        String defaultValue = Config.getCONFIG().getFieldDefaults(tableName).get(name);
-        if (defaultValue != null) {
-            return defaultValue;
+        String fieldDefault = Config.getCONFIG().getFieldDefaults(tableName).get(name);
+        if (fieldDefault != null) {
+            return fieldDefault;
         }
-        defaultValue = Config.getCONFIG().getTypeDefaults(tableName).get(sqlTypeName);
-        if (defaultValue != null) {
-            return defaultValue;
+        fieldDefault = Config.getCONFIG().getTypeDefaults(tableName).get(sqlTypeName);
+        if (fieldDefault != null) {
+            return fieldDefault;
         }
 
         String predefinedType = Config.getCONFIG().getFieldTypes(tableName).get(name);
@@ -213,19 +276,19 @@ public class DBColumn {
 
         switch (javaType) {
             case LONG:
-                return "0L";
+                return defaultValue != null ? defaultValue : "0L";
             case BOOLEAN:
-                return VALUE_BOOLEAN;
+                return defaultValue != null ? defaultValue.toLowerCase(Locale.ROOT) : VALUE_BOOLEAN;
             case STRING:
-                return VALUE_STRING;
+                return defaultValue != null ? defaultValue : VALUE_STRING;
             case SQL_DATE:
                 return "java.sql.Date.valueOf(java.time.LocalDate.now())";
             case BIG_INTEGER:
-                return "java.math.BigInteger.ZERO";
+                return defaultValue != null ? defaultValue : "java.math.BigInteger.ZERO";
             case BIG_DECIMAL:
-                return VALUE_BIG_DECIMAL;
+                return defaultValue != null ? "new java.math.BigDecimal(\"" + defaultValue + "\")" : VALUE_BIG_DECIMAL;
             case INTEGER:
-                return "0";
+                return defaultValue != null ? defaultValue : "0";
             case SQL_TIME:
                 return "java.sql.Time.valueOf(java.time.LocalTime.now())";
             case SQL_TIMESTAMP:
@@ -237,7 +300,7 @@ public class DBColumn {
             case INSTANT:
                 return "Instant.now()";
             case BYTE:
-                return "(byte) 0";
+                return defaultValue != null ? "(byte) " + defaultValue : "(byte) 0";
             case BYTE_ARRAY:
                 return "new byte[0]";
             default:
@@ -263,4 +326,10 @@ public class DBColumn {
                 }
         }
     }
+
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE).toString();
+    }
+
 }

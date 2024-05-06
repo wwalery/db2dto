@@ -1,6 +1,10 @@
 package dev.walgo.db2dto;
 
 import dev.walgo.db2dto.config.Config;
+import dev.walgo.db2dto.config.TableConfig;
+import dev.walgo.walib.db.ColumnInfo;
+import dev.walgo.walib.db.DBInfo;
+import dev.walgo.walib.db.TableInfo;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.BufferedReader;
@@ -12,10 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +28,12 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class Processor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Processor.class);
 
     private static final String TEMPLATE_INTERFACE = "interface.tpl";
     private static final String TEMPLATE_CLASS = "class.tpl";
@@ -42,13 +45,19 @@ public class Processor {
     private static final String SPACE = " ";
     private static final String TYPE_TABLE = "TABLE";
 
-    @Setter
     private Config config;
 
     private PebbleEngine pebbleEngine;
 
-    @Getter
-    private Map<String, DBTable> tables = new HashMap<>();
+    private final Map<String, DBTable> tables = new HashMap<>();
+
+    public Map<String, DBTable> getTables() {
+        return tables;
+    }
+
+    public void setConfig(Config config) {
+        this.config = config;
+    }
 
     private void writeToDisk(String packageName, String className, String data) throws IOException {
         Path path = Paths.get(config.sourceOutputDir, packageName.replace(DOT, SLASH), className + EXT_JAVA);
@@ -90,27 +99,48 @@ public class Processor {
         writeToDisk(config.getPackageName(""), config.baseInterfaceName, result);
 
         try (Connection jdbcConnection = DriverManager.getConnection(config.dbURL, config.dbUser, config.dbPassword)) {
-            DatabaseMetaData metadata = jdbcConnection.getMetaData();
-            try (ResultSet rs = metadata.getTables(null, config.dbSchema, PERCENT, null)) {
-                while (rs.next()) {
-                    DBTable table = new DBTable(rs);
-                    LOG.debug(table.toString());
-                    if (!TYPE_TABLE.equals(table.type)) {
-                        continue;
-                    }
+            DBInfo info = new DBInfo(jdbcConnection, null, config.dbSchema, PERCENT);
 
-                    try (ResultSet rsColumns = metadata.getColumns(null, config.dbSchema, table.realName, PERCENT)) {
-                        table.columns = new ArrayList<>();
-                        while (rsColumns.next()) {
-                            DBColumn column = new DBColumn(rsColumns);
-                            table.columns.add(column);
-                        }
-                    }
-                    tables.put(table.name, table);
-                    generateForTable(table);
+            // DatabaseMetaData metadata = jdbcConnection.getMetaData();
+            // try (ResultSet rs = metadata.getTables(null, config.dbSchema, PERCENT, null)) {
+            for (TableInfo dbTable : info.getTables()) {
+                DBTable table = new DBTable(dbTable);
+                LOG.debug(table.toString());
+                if (!TYPE_TABLE.equals(table.type)) {
+                    continue;
                 }
+
+//                ResultSetMetaData tableMeta = dbTable.getMetaData();
+//                for (int idx = 1; idx <= tableMeta.getColumnCount(); idx++) {
+//                    LOG.info("{} = {}", tableMeta.getColumnName(idx), tableMeta.getColumnClassName(idx));
+//                }
+
+                table.columns = new ArrayList<>();
+                for (ColumnInfo dbColumn : dbTable.getFields().values()) {
+                    // try (ResultSet rsColumns = metadata.getColumns(null,
+                    // config.dbSchema, table.realName, PERCENT)) {
+                    // while (rsColumns.next()) {
+                    DBColumn column = new DBColumn(table.realName, dbColumn, info);
+                    table.columns.add(column);
+                    // }
+                }
+
+                TableConfig.ColumnOrder order = config.getColumnsOrder(table.name);
+                switch (order) {
+                    case ALPHA:
+                        table.columns.sort(Comparator.comparing(it -> it.name));
+                        break;
+                    case TABLE:
+                        table.columns.sort(Comparator.comparing(it -> it.order));
+                        break;
+                    default:
+                        throw new RuntimeException("Indefined sort order: [%s]".formatted(order));
+                }
+                tables.put(table.name, table);
+                generateForTable(table);
             }
         }
+        // }
 
         if (config.compile) {
             compile();

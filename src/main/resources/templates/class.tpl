@@ -28,7 +28,7 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   private final Set<String> changedFields = new HashSet<>();
 
 {% for column in table.columns %}
-  private {% if column.isNullable %}{{ column.javaType | raw }}{% else %}{{ column.simpleJavaType | raw }}{% endif %} {{ column.javaFieldName }};
+  private {% if column.isNullable %}{{ column.javaType | raw }}{% else %}{{ column.simpleJavaType | raw }}{% endif %} {{ column.javaFieldName }}{% if column.hasDefaultValue and config.isUseDefaults(table.name) %} = {{ column.defaultValue | raw }}{% endif %};
 {% endfor %}
 
 {% for column in config.fields(table.name) %}
