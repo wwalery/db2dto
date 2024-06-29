@@ -9,6 +9,7 @@ import dev.walgo.walib.db.DBInfo;
 import java.sql.Types;
 import java.util.Locale;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -60,6 +61,7 @@ public class DBColumn {
     public String defaultValue;
     public int order;
 
+    @ToStringExclude
     private DBInfo dbInfo;
 
     public DBColumn(String fieldName, String fieldJavaType) {
