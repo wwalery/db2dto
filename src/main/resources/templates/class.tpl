@@ -35,6 +35,22 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   private {{ column.javaType | raw }} {{ column.javaFieldName }};
 {% endfor %}
 
+  public {{ table.javaName }}() {
+    // empty constructor
+  }
+
+  public {{ table.javaName }}({{ table.javaName }} source) {
+    if (source == null) {
+      return;
+    }
+{% for column in table.columns %}
+    this.{{ column.javaFieldName }} = source.get{{ column.javaPropertyName }}();
+{% endfor %}
+{% for column in config.fields(table.name) %}
+    this.{{ column.javaFieldName }} = source.get{{ column.javaPropertyName }}();
+{% endfor %}
+  }
+
 
   public boolean isFieldChanged(final String fieldName) {
     return changedFields.contains(fieldName);

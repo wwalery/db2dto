@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -168,14 +169,18 @@ public class Processor {
 
         // pack
         int baseLen = config.classOutputDir.length();
-        String filesToPack = Files.walk(Paths.get(config.classOutputDir))
+        List<String> filesToPack = Files.walk(Paths.get(config.classOutputDir))
                 .filter(it -> it.toFile().isFile())
-                .map(
-                        it -> " -C " + config.classOutputDir + SPACE + it.toString().substring(baseLen + 1))
-                .collect(Collectors.joining(SPACE));
+                .flatMap(
+                        it -> Arrays.stream(
+                                new String[] { "-C", config.classOutputDir, it.toString().substring(baseLen + 1) }))
+                .toList();
 
-        String cmd = "jar --create --file " + config.jarPath + SPACE + filesToPack;
-        Process process = Runtime.getRuntime().exec(cmd);
+        List<String> cmdStart = List.of("jar", "--create", "--file=" + config.jarPath);
+        List<String> cmd = new ArrayList<>(cmdStart);
+        cmd.addAll(filesToPack);
+        LOG.debug("Execute command: {}", cmd);
+        Process process = Runtime.getRuntime().exec(cmd.toArray(String[]::new));
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
