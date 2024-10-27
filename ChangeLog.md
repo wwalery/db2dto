@@ -1,6 +1,10 @@
 # DB2DTO Copyright (c) 2020 - 2024
 Author: Walery Wysotsky <dev@wysotsky.info>
 
+## [1.17.0] - 2024-10-27
+### Added
+- Add table name constant into default template
+
 ## [1.16.1] - 2024-10-27
 ### Fixed
 - Expands functionality of some internal classes

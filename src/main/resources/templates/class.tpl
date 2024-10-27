@@ -14,6 +14,8 @@ import {{ enum }};
 
 public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% for interface in config.getInterfaces(table.name) %}, {{ interface }}{% endfor %} {
 
+  public static final String TABLE = "{{ table.name }}";
+
 {% for column in table.columns %}
   public static final String {{ column.name | upper }} = "{{ column.name }}";
 {% endfor %}
