@@ -1,6 +1,10 @@
 # DB2DTO Copyright (c) 2020 - 2024
 Author: Walery Wysotsky <dev@wysotsky.info>
 
+## [1.16.1] - 2024-10-27
+### Fixed
+- Expands functionality of some internal classes
+
 ## [1.16.0] - 2024-10-20
 ### Added
 - Add "copy" constructor
