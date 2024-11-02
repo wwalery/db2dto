@@ -54,6 +54,36 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   }
 
 
+
+  public {{ table.javaName }}(
+{% for column in table.columns %}
+      {{ column.javaType | raw }} {{ column.javaFieldName }}{% if not loop.last %},
+{% endif %}{% endfor %}
+  ) {
+{% for column in table.columns %}
+    this.{{ column.javaFieldName }} = {{ column.javaFieldName }};
+{% endfor %}
+  }
+
+{% if not (config.fields(table.name) is empty) %}
+  public {{ table.javaName }}(
+{% for column in table.columns %}
+      {{ column.javaType | raw }} {{ column.javaFieldName }},
+{% endfor %}
+{% for column in config.fields(table.name) %}
+      {{ column.javaType | raw }} {{ column.javaFieldName }}{% if not loop.last %},
+{% endif %}{% endfor %}
+  ) {
+{% for column in table.columns %}
+    this.{{ column.javaFieldName }} = {{ column.javaFieldName }};
+{% endfor %}
+{% for column in config.fields(table.name) %}
+    this.{{ column.javaFieldName }} = {{ column.javaFieldName }};
+{% endfor %}
+  }
+{% endif %}
+
+
   public boolean isFieldChanged(final String fieldName) {
     return changedFields.contains(fieldName);
   }
