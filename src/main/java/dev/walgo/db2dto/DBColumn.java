@@ -4,6 +4,7 @@ import com.google.common.base.CaseFormat;
 import dev.walgo.db2dto.config.Config;
 import dev.walgo.db2dto.plugin.IPlugin;
 import dev.walgo.db2dto.plugin.PluginHandler;
+import dev.walgo.walib.TriOptional;
 import dev.walgo.walib.db.ColumnInfo;
 import dev.walgo.walib.db.DBInfo;
 import java.sql.Types;
@@ -97,11 +98,14 @@ public class DBColumn {
         this.description = columnInfo.comment(); // rs.getString("REMARKS");
         this.defaultValue = columnInfo.defaultValue();
         this.order = columnInfo.position();
-        this.javaType = Config.getCONFIG().getFieldTypes(this.tableName).get(this.name);
+    }
+
+    public void fillJavaType() {
+        javaType = Config.getCONFIG().getFieldTypes(tableName).get(name);
         if (this.javaType == null) {
-            String sqlMappedType = Config.getCONFIG().sqlTypes.get(this.sqlTypeName);
+            String sqlMappedType = Config.getCONFIG().sqlTypes.get(sqlTypeName);
             if (sqlMappedType == null) {
-                this.guessJavaType();
+                guessJavaType();
             } else {
                 this.javaType = sqlMappedType;
                 if (this.sqlType == Types.ARRAY) {
@@ -115,6 +119,7 @@ public class DBColumn {
         } else {
             this.simpleJavaType = this.javaType;
         }
+
     }
 
     private void setJavaNames(final String fieldName) {
@@ -257,9 +262,9 @@ public class DBColumn {
 
     public String getDefaultValue() {
         for (IPlugin plugin : PluginHandler.getPlugins(dbInfo)) {
-            String result = plugin.getDefaultValue(this);
-            if (result != null) {
-                return result;
+            TriOptional<String> result = plugin.getDefaultValue(this);
+            if (!result.isEmpty()) {
+                return result.get();
             }
         }
         String fieldDefault = Config.getCONFIG().getFieldDefaults(tableName).get(name);

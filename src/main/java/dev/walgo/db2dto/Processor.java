@@ -2,6 +2,7 @@ package dev.walgo.db2dto;
 
 import dev.walgo.db2dto.config.Config;
 import dev.walgo.db2dto.config.TableConfig;
+import dev.walgo.db2dto.plugin.PluginHandler;
 import dev.walgo.walib.db.ColumnInfo;
 import dev.walgo.walib.db.DBInfo;
 import dev.walgo.walib.db.TableInfo;
@@ -57,6 +58,7 @@ public class Processor {
     }
 
     public void setConfig(Config config) {
+        PluginHandler.clearPlugins();
         this.config = config;
     }
 
@@ -122,6 +124,7 @@ public class Processor {
                     // config.dbSchema, table.realName, PERCENT)) {
                     // while (rsColumns.next()) {
                     DBColumn column = new DBColumn(table.realName, dbColumn, info);
+                    column.fillJavaType();
                     table.columns.add(column);
                     // }
                 }

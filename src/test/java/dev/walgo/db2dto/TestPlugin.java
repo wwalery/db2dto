@@ -1,6 +1,7 @@
 package dev.walgo.db2dto;
 
 import dev.walgo.db2dto.plugin.IPlugin;
+import dev.walgo.walib.TriOptional;
 import dev.walgo.walib.db.DBInfo;
 
 /** @author Walery Wysotsky <dev@wysotsky.info> */
@@ -20,11 +21,11 @@ public class TestPlugin implements IPlugin {
     }
 
     @Override
-    public String getDefaultValue(DBColumn column) {
+    public TriOptional<String> getDefaultValue(DBColumn column) {
         if (TABLE_2.equals(column.tableName) && FIELD_OBJECT.equals(column.name)) {
-            return "new " + TestClass.class.getName() + "()";
+            return TriOptional.of("new " + TestClass.class.getName() + "()");
         }
-        return null;
+        return TriOptional.empty();
     }
 
     @Override

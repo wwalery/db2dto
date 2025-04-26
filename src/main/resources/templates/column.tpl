@@ -154,7 +154,7 @@
     return this.{{ column.javaFieldName }};
   }
 
-{%  if (column.isNullable and not column.isSimpleType) %}
+{%  if (column.isNullable and not column.isSimpleType and column.hasDefaultValue) %}
   public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
     return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }} : {{ column.defaultValue | raw }};
   }

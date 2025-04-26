@@ -1,6 +1,7 @@
 package dev.walgo.db2dto.plugin;
 
 import dev.walgo.db2dto.DBColumn;
+import dev.walgo.walib.TriOptional;
 import dev.walgo.walib.db.DBInfo;
 
 public interface IPlugin {
@@ -24,5 +25,5 @@ public interface IPlugin {
      * @param column
      * @return value for column. String values need to be returned with double quotes
      */
-    String getDefaultValue(DBColumn column);
+    TriOptional<String> getDefaultValue(DBColumn column);
 }

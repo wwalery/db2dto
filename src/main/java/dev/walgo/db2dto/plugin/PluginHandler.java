@@ -28,7 +28,9 @@ public class PluginHandler {
             }
             try {
                 IPlugin plugin = pluginClass.getConstructor().newInstance();
+//                LOG.debug("check plugin: {} for db: {}", pluginClass, dbInfo.getDBType());
                 if (plugin.usePlugin(dbInfo)) {
+                    LOG.info("Use plugin: {}", pluginClass);
                     plugins.add(plugin);
                 }
             } catch (Exception ex) {
@@ -52,4 +54,9 @@ public class PluginHandler {
         }
         return plugins;
     }
+
+    public static void clearPlugins() {
+        plugins = null;
+    }
+
 }
