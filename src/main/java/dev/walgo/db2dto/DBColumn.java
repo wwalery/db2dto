@@ -61,6 +61,7 @@ public class DBColumn {
     public String description;
     public String defaultValue;
     public int order;
+    public boolean isPrimaryKey;
 
     @ToStringExclude
     private DBInfo dbInfo;
@@ -98,6 +99,7 @@ public class DBColumn {
         this.description = columnInfo.comment(); // rs.getString("REMARKS");
         this.defaultValue = columnInfo.defaultValue();
         this.order = columnInfo.position();
+        this.isPrimaryKey = columnInfo.isPrimaryKey();
     }
 
     public void fillJavaType() {

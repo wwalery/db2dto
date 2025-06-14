@@ -1,1 +1,2 @@
-./gradlew publish
+# ./gradlew publish
+./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository

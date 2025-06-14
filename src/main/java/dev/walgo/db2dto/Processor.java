@@ -30,6 +30,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,11 +96,13 @@ public class Processor {
         // .strictVariables(true)
         // .build();
 
-        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(config.templateDir + SLASH + TEMPLATE_INTERFACE);
-        Writer writer = new StringWriter();
-        compiledTemplate.evaluate(writer, Map.of(CONFIG, config));
-        String result = writer.toString();
-        writeToDisk(config.getPackageName(""), config.baseInterfaceName, result);
+        if (StringUtils.isNotEmpty(config.baseInterfaceName)) {
+            PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(config.templateDir + SLASH + TEMPLATE_INTERFACE);
+            Writer writer = new StringWriter();
+            compiledTemplate.evaluate(writer, Map.of(CONFIG, config));
+            String result = writer.toString();
+            writeToDisk(config.getPackageName(""), config.baseInterfaceName, result);
+        }
 
         try (Connection jdbcConnection = DriverManager.getConnection(config.dbURL, config.dbUser, config.dbPassword)) {
             DBInfo info = new DBInfo(jdbcConnection, null, config.dbSchema, PERCENT);

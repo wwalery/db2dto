@@ -1,5 +1,11 @@
-# DB2DTO Copyright (c) 2020 - 2024
+# DB2DTO Copyright (c) 2020 - 2025
 Author: Walery Wysotsky <dev@wysotsky.info>
+
+## [1.20.0] - 2025-06-14
+### Added
+- Panache template
+- Attribute isPrimaryKey was added to column
+- Migrate to the new Sonatype repo
 
 ## [1.17.0] - 2024-10-27
 ### Added

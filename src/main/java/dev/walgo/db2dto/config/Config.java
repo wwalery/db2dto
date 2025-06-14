@@ -58,11 +58,8 @@ public class Config {
 
     /**
      * Name of base interface for all generated classes.
-     *
-     * <p>
-     * 'IData' by default
      */
-    public String baseInterfaceName = "IData";
+    public String baseInterfaceName;
 
     /** Generate ARRAY column as List. Otherwise - array ([]). */
     public boolean arrayAsList;
