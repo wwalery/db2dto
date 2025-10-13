@@ -7,8 +7,12 @@ import dev.walgo.walib.db.ColumnInfo;
 import dev.walgo.walib.db.DBInfo;
 import dev.walgo.walib.db.TableInfo;
 import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.loader.ClasspathLoader;
+import io.pebbletemplates.pebble.loader.FileLoader;
+import io.pebbletemplates.pebble.loader.Loader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -81,11 +85,16 @@ public class Processor {
         if (config == null) {
             throw new IllegalArgumentException("config not defined");
         }
+        tables.clear();
         config.check();
         Files.createDirectories(Paths.get(config.sourceOutputDir));
 
+        File templateDir = new File(config.templateDir);
+        Loader<?> loader = templateDir.exists() ? new FileLoader() : new ClasspathLoader();
+
         pebbleEngine = new PebbleEngine.Builder()
                 // .syntax(syntax)
+                .loader(loader)
                 .cacheActive(true)
                 .strictVariables(true)
                 .build();
