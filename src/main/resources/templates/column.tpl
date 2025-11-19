@@ -156,7 +156,10 @@
 
 {%  if (column.isNullable and not column.isSimpleType and column.hasDefaultValue) %}
   public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
-    return this.{{ column.javaFieldName }} != null ? this.{{ column.javaFieldName }} : {{ column.defaultValue | raw }};
+    if (this.{{ column.javaFieldName }} == null) {
+      this.{{ column.javaFieldName }} = {{ column.defaultValue | raw }};
+    }
+    return this.{{ column.javaFieldName }};
   }
 {%  endif %}
 

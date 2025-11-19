@@ -259,7 +259,24 @@ public class DBColumn {
     }
 
     public boolean hasDefaultValue() {
-        return defaultValue != null;
+        if (defaultValue != null) {
+            return true;
+        }
+        for (IPlugin plugin : PluginHandler.getPlugins(dbInfo)) {
+            TriOptional<String> result = plugin.getDefaultValue(this);
+            if (result.hasValue() && (result.get() != null)) {
+                return true;
+            }
+        }
+        String fieldDefault = Config.getCONFIG().getFieldDefaults(tableName).get(name);
+        if (fieldDefault != null) {
+            return true;
+        }
+        fieldDefault = Config.getCONFIG().getTypeDefaults(tableName).get(sqlTypeName);
+        if (fieldDefault != null) {
+            return true;
+        }
+        return false;
     }
 
     public String getDefaultValue() {
