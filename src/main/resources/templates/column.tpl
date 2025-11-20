@@ -68,14 +68,14 @@
       if (newValue == null) {
         this.{{ column.javaFieldName }} = null;
       } else {
-        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableMap(newValue, () -> data.setChangedField({{ column.name | upper }}));
+        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableMap<>(newValue, () -> data.setChangedField({{ column.name | upper }}));
       }
 {%  elseif columnType.startsWith("List<") or columnType.startsWith("java.util.List<") %}
       final {{ config.baseInterfaceName }} data = this;
       if (newValue == null) {
         this.{{ column.javaFieldName }} = null;
       } else {
-        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableList(newValue, () -> data.setChangedField({{ column.name | upper }}));
+        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableList<>(newValue, () -> data.setChangedField({{ column.name | upper }}));
       }
 {%  else %}
       this.{{ column.javaFieldName }} = newValue;
