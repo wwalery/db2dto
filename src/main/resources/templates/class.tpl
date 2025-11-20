@@ -53,37 +53,6 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
 {% endfor %}
   }
 
-
-
-  public {{ table.javaName }}(
-{% for column in table.columns %}
-      {{ column.javaType | raw }} {{ column.javaFieldName }}{% if not loop.last %},
-{% endif %}{% endfor %}
-  ) {
-{% for column in table.columns %}
-    this.{{ column.javaFieldName }} = {{ column.javaFieldName }};
-{% endfor %}
-  }
-
-{% if not (config.fields(table.name) is empty) %}
-  public {{ table.javaName }}(
-{% for column in table.columns %}
-      {{ column.javaType | raw }} {{ column.javaFieldName }},
-{% endfor %}
-{% for column in config.fields(table.name) %}
-      {{ column.javaType | raw }} {{ column.javaFieldName }}{% if not loop.last %},
-{% endif %}{% endfor %}
-  ) {
-{% for column in table.columns %}
-    this.{{ column.javaFieldName }} = {{ column.javaFieldName }};
-{% endfor %}
-{% for column in config.fields(table.name) %}
-    this.{{ column.javaFieldName }} = {{ column.javaFieldName }};
-{% endfor %}
-  }
-{% endif %}
-
-
   public boolean isFieldChanged(final String fieldName) {
     return changedFields.contains(fieldName);
   }
@@ -91,6 +60,11 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   public boolean isChanged() {
     return !changedFields.isEmpty();
   }
+
+  public void setChangedField(final String fieldName) {
+    changedFields.add(fieldName);
+  }
+
 
   public void resetChangedField(final String fieldName) {
     changedFields.remove(fieldName);
@@ -116,7 +90,7 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   public Map<String, Object> getValues(final boolean onlyChanged) {
     Map<String, Object> result = new HashMap<>();
 {% for column in table.columns %}
-    if (!onlyChanged || changedFields.contains({{ column.name | upper }})) {
+    if (!onlyChanged || isFieldChanged({{ column.name | upper }})) {
       result.put({{ column.name | upper }}, get{{ column.javaPropertyName }}());
     }
 {% endfor %}

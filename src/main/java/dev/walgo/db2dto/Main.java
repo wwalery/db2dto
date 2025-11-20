@@ -7,9 +7,9 @@ import java.nio.file.Paths;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.help.HelpFormatter;
 
 public class Main {
 
@@ -44,41 +44,43 @@ public class Main {
                         .longOpt(OPTION_DB_URL_LONG)
                         .hasArg()
                         .desc("Database connection string.")
-                        .build());
+                        .get());
         options.addOption(
                 Option.builder(OPTION_DB_USER)
                         .argName(OPTION_DB_USER_NAME)
                         .longOpt(OPTION_DB_USER_LONG)
                         .hasArg()
                         .desc("Database user name.")
-                        .build());
+                        .get());
         options.addOption(
                 Option.builder(OPTION_DB_PASSWORD)
                         .argName(OPTION_DB_PASSWORD_NAME)
                         .longOpt(OPTION_DB_PASSWORD_LONG)
                         .hasArg()
                         .desc("Database user password.")
-                        .build());
+                        .get());
         options.addOption(
                 Option.builder(OPTION_CONFIG)
                         .argName(OPTION_CONFIG_NAME)
                         .longOpt(OPTION_CONFIG_LONG)
                         .hasArg()
                         .desc("Configuration file.")
-                        .build());
+                        .get());
         options.addOption(
                 Option.builder(OPTION_DB_SCHEMA)
                         .argName(OPTION_DB_SCHEMA_NAME)
                         .longOpt(OPTION_DB_SCHEMA_LONG)
                         .hasArg()
                         .desc("Database schema.")
-                        .build());
+                        .get());
         options.addOption(OPTION_HELP, false, "This help");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
         if (cmd.hasOption(OPTION_HELP)) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(Main.class.getName(), options);
+            HelpFormatter formatter = HelpFormatter.builder().get();
+            String header = "";
+            String footer = "";
+            formatter.printHelp("db2dto", header, options, footer, true);
             return;
         }
         String configFile = "db2dto.conf";

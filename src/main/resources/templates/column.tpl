@@ -3,17 +3,17 @@
 
 {% if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}Changed() {
-    changedFields.add({{ column.name | upper }});
+    setChangedField({{ column.name | upper }});
     return this;
   }
 
   public {{ table.javaName }} reset{{ column.javaPropertyName }}Changed() {
-    changedFields.remove({{ column.name | upper }});
+    resetChangedField({{ column.name | upper }});
     return this;
   }
 
   public boolean is{{ column.javaPropertyName }}Changed() {
-    return changedFields.contains({{ column.name | upper }});
+    return isFieldChanged({{ column.name | upper }});
   }
 {% endif %}
 
@@ -28,7 +28,7 @@
     byte value = newValue ?  (byte) 1 : (byte) 0);
     if (this.{{ column.javaFieldName }} != value) {
       this.{{ column.javaFieldName }} = value;
-      changedFields.add({{ column.name | upper }});
+      setChangedField({{ column.name | upper }});
     }
     return this;
   }
@@ -47,11 +47,11 @@
     if (newValue == null) {
       if (this.{{ column.javaFieldName }} != null) {
         this.{{ column.javaFieldName }} = null;
-        changedFields.add({{ column.name | upper }});
+        setChangedField({{ column.name | upper }});
       }
     } else if (!Objects.equals(newValue.name(), this.{{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue.name();
-      changedFields.add({{ column.name | upper }});
+      setChangedField({{ column.name | upper }});
     }
     return this;
   }
@@ -62,6 +62,27 @@
   }
 {% endif %}
   
+{% macro setValue(config, columnType, column) %}
+{%  if columnType.startsWith("Map<") or columnType.startsWith("java.util.Map<") %}
+      final {{ config.baseInterfaceName }} data = this;
+      if (newValue == null) {
+        this.{{ column.javaFieldName }} = null;
+      } else {
+        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableMap(newValue, () -> data.setChangedField({{ column.name | upper }}));
+      }
+{%  elseif columnType.startsWith("List<") or columnType.startsWith("java.util.List<") %}
+      final {{ config.baseInterfaceName }} data = this;
+      if (newValue == null) {
+        this.{{ column.javaFieldName }} = null;
+      } else {
+        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableList(newValue, () -> data.setChangedField({{ column.name | upper }}));
+      }
+{%  else %}
+      this.{{ column.javaFieldName }} = newValue;
+{%  endif %}
+      setChangedField({{ column.name | upper }});
+{% endmacro %}  
+  
 {%  if (not config.isReadOnlyField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}(final {{ columnType | raw }} newValue) {
 {%    if (column.isSimpleType) %}
@@ -69,8 +90,7 @@
 {%    else %}
     if (!Objects.equals(newValue, this.{{ column.javaFieldName }})) {
 {%    endif %}
-      this.{{ column.javaFieldName }} = newValue;
-      changedFields.add({{ column.name | upper }});
+      {{ setValue(config, columnType, column) }}
     }
     return this;
   }
@@ -78,8 +98,7 @@
 
 {%    if (not config.isSyntheticField(table.name, column.name)) %}
   public {{ table.javaName }} set{{ column.javaPropertyName }}Force(final {{ columnType | raw }} newValue) {
-    this.{{ column.javaFieldName }} = newValue;
-    changedFields.add({{ column.name | upper }});
+    {{ setValue(config, columnType, column) }}
     return this;
   }
 
@@ -89,8 +108,7 @@
 {%      else %}
     if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
 {%      endif %}
-      this.{{ column.javaFieldName }} = newValue;
-      changedFields.add({{ column.name | upper }});
+      {{ setValue(config, columnType, column) }}
     }
     return this;
   }
@@ -113,12 +131,12 @@
 {%      else %}
       if (this.{{ column.javaFieldName }} != null) {
         this.{{ column.javaFieldName }} = null;
-        changedFields.add({{ column.name | upper }});
+        setChangedField({{ column.name | upper }});
       }
 {%    endif %}
     } else if (!Objects.equals(newValue.get(), this.{{ column.javaFieldName }})) {
       this.{{ column.javaFieldName }} = newValue.get();
-      changedFields.add({{ column.name | upper }});
+      setChangedField({{ column.name | upper }});
     }
     return this;
   }
@@ -143,7 +161,7 @@
     } else {
       this.{{ column.javaFieldName }} = newValue.get();
     }
-    changedFields.add({{ column.name | upper }});
+    setChangedField({{ column.name | upper }});
     return this;
   }
   
@@ -157,7 +175,8 @@
 {%  if (column.isNullable and not column.isSimpleType and column.hasDefaultValue) %}
   public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
     if (this.{{ column.javaFieldName }} == null) {
-      this.{{ column.javaFieldName }} = {{ column.defaultValue | raw }};
+      {{ column.javaType | raw }} newValue = {{ column.defaultValue | raw }};
+      {{ setValue(config, columnType, column) }}
     }
     return this.{{ column.javaFieldName }};
   }
@@ -169,7 +188,7 @@
   public {{ table.javaName }} set{{ column.javaPropertyName }}AsDateTime(final LocalDateTime newValue) {
     if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = java.sql.Timestamp.valueOf(newValue);
-      changedFields.add({{ column.name | upper }});
+      setChangedField({{ column.name | upper }});
     }
     return this;
   }
@@ -177,7 +196,7 @@
   public {{ table.javaName }} set{{ column.javaPropertyName }}AsInstant(final Instant newValue) {
     if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = java.sql.Timestamp.from(newValue);
-      changedFields.add({{ column.name | upper }});
+      setChangedField({{ column.name | upper }});
     }
     return this;
   }
@@ -200,7 +219,7 @@
   public {{ table.javaName }} set{{ column.javaPropertyName }}AsDate(final LocalDate newValue) {
     if (!Objects.equals(newValue, this.{{ column.javaFieldName }}) && (newValue != null)) {
       this.{{ column.javaFieldName }} = java.sql.Date.valueOf(newValue);
-      changedFields.add({{ column.name | upper }});
+      setChangedField({{ column.name | upper }});
     }
     return this;
   }

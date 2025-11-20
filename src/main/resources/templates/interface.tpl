@@ -11,6 +11,9 @@ public interface {{ config.baseInterfaceName }} {
   // Any fields changed
   boolean isChanged();
 
+  // set changing flag for specific field
+  void setChangedField(final String fieldName);
+
   // reset changing flag for specific field
   void resetChangedField(final String fieldName);
   
