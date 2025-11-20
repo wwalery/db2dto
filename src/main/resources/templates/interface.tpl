@@ -39,5 +39,7 @@ public interface {{ config.baseInterfaceName }} {
   Map<String, Object> getValues(final boolean onlyChanged);
 
 
+  void afterLoad();
+
 }
 

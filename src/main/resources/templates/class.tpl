@@ -103,6 +103,21 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   }
 
 
+  public void afterLoad() {
+      final {{ config.baseInterfaceName }} data = this;
+{% for column in table.columns %}
+{%  if column.javaType.startsWith("Map<") or column.javaType.startsWith("java.util.Map<") %}
+      if (this.{{ column.javaFieldName }} != null) {
+        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableMap<>(this.{{ column.javaFieldName }}, () -> data.setChangedField({{ column.name | upper }}));
+      }
+{%  elseif column.javaType.startsWith("List<") or column.javaType.startsWith("java.util.List<") %}
+      if (this.{{ column.javaFieldName }} != null) {
+        this.{{ column.javaFieldName }} = new dev.walgo.walib.ObservableList<>(this.{{ column.javaFieldName }}, () -> data.setChangedField({{ column.name | upper }}));
+      }
+{%  endif %}
+{% endfor %}
+  }
+
 
 {% for column in table.columns %}
 {% include "./column.tpl" %}
