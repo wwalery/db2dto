@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 public class PostgreSQLTest {
 
@@ -15,7 +15,7 @@ public class PostgreSQLTest {
     protected static final String DB_SQL = "db/create_db_postgres.sql";
 //    protected static final String DB_SCHEMA = "public";
 
-    protected static final PostgreSQLContainer<?> dbContainer = new PostgreSQLContainer<>("postgres:latest")
+    protected static final PostgreSQLContainer dbContainer = new PostgreSQLContainer("postgres:latest")
             .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD)

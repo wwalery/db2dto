@@ -30,7 +30,7 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
   private final Set<String> changedFields = new HashSet<>();
 
 {% for column in table.columns %}
-  private {% if column.isNullable %}{{ column.javaType | raw }}{% else %}{{ column.simpleJavaType | raw }}{% endif %} {{ column.javaFieldName }}{% if column.hasDefaultValue and config.isUseDefaults(table.name) %} = {{ column.defaultValue | raw }}{% endif %};
+  private {% if column.isNullable %}{{ column.javaType | raw }}{% else %}{{ column.simpleJavaType | raw }}{% endif %} {{ column.javaFieldName }}{% if column.hasDefaultValue and config.isUseDefaults(table.name) %} = {{ column.getDefaultValue | raw }}{% endif %};
 {% endfor %}
 
 {% for column in config.fields(table.name) %}
@@ -41,7 +41,7 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
     // empty constructor
   }
 
-  public {{ table.javaName }}({{ table.javaName }} source) {
+  public {{ table.javaName }}({{ table.javaName }} source, boolean copyChanged) {
     if (source == null) {
       return;
     }
@@ -51,7 +51,15 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
 {% for column in config.fields(table.name) %}
     this.{{ column.javaFieldName }} = source.get{{ column.javaPropertyName }}();
 {% endfor %}
+    if (copyChanged) {
+      this.changedFields.addAll(source.getChangedFields());
+    }
   }
+
+  public {{ table.javaName }}({{ table.javaName }} source) {
+    this(source, false);
+  }
+
 
   public boolean isFieldChanged(final String fieldName) {
     return changedFields.contains(fieldName);
@@ -72,6 +80,10 @@ public class {{ table.javaName }} implements {{ config.baseInterfaceName }}{% fo
 
   public void resetChanged() {
     changedFields.clear();
+  }
+
+  public Set<String> getChangedFields() {
+    return Set.copyOf(changedFields);
   }
 
 

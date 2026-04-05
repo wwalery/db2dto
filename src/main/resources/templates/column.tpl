@@ -175,7 +175,7 @@
 {%  if (column.isNullable and not column.isSimpleType and column.hasDefaultValue) %}
   public {{ column.javaType | raw }} get{{ column.javaPropertyName }}NonNull() {
     if (this.{{ column.javaFieldName }} == null) {
-      {{ column.javaType | raw }} newValue = {{ column.defaultValue | raw }};
+      {{ column.javaType | raw }} newValue = {{ column.getDefaultValue | raw }};
       {{ setValue(config, columnType, column) }}
     }
     return this.{{ column.javaFieldName }};

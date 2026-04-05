@@ -1,5 +1,9 @@
-# DB2DTO Copyright (c) 2020 - 2025
+# DB2DTO Copyright (c) 2020 - 2026
 Author: Walery Wysotsky <dev@wysotsky.info>
+
+## [1.24.0] - 2025-06-14
+### Added
+- Allow to copy generated object with list of changed fields
 
 ## [1.20.0] - 2025-06-14
 ### Added

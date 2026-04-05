@@ -90,7 +90,7 @@ public class Processor {
         Files.createDirectories(Paths.get(config.sourceOutputDir));
 
         File templateDir = new File(config.templateDir);
-        Loader<?> loader = templateDir.exists() ? new FileLoader() : new ClasspathLoader();
+        Loader<?> loader = templateDir.exists() ? new FileLoader("") : new ClasspathLoader();
 
         pebbleEngine = new PebbleEngine.Builder()
                 // .syntax(syntax)
