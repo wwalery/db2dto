@@ -35,6 +35,8 @@ public class DBColumn {
     private static final String LOCAL_DATE = "LocalDate";
     private static final String INTEGER = "Integer";
     private static final String INTEGER_SIMPLE = "int";
+    private static final String SHORT = "Short";
+    private static final String SHORT_SIMPLE = "short";
     private static final String SQL_DATE = "java.sql.Date";
     private static final String LONG = "Long";
     private static final String LONG_SIMPLE = "long";
@@ -75,6 +77,7 @@ public class DBColumn {
         isSimpleType = fieldJavaType.equals(BOOLEAN_SIMPLE)
                 || fieldJavaType.equals(BYTE_SIMPLE)
                 || fieldJavaType.equals(INTEGER_SIMPLE)
+                || fieldJavaType.equals(SHORT_SIMPLE)
                 || fieldJavaType.equals(LONG_SIMPLE);
         isNullable = !isSimpleType;
     }
@@ -208,9 +211,16 @@ public class DBColumn {
                         : null;
                 break;
             case Types.INTEGER:
-            case Types.SMALLINT:
                 javaType = INTEGER;
                 simpleJavaType = INTEGER_SIMPLE;
+                isSimpleType = !isNullable;
+                defaultValue = (defaultValue != null) && NumberUtils.isDigits(defaultValue)
+                        ? defaultValue
+                        : null;
+                break;
+            case Types.SMALLINT:
+                javaType = SHORT;
+                simpleJavaType = SHORT_SIMPLE;
                 isSimpleType = !isNullable;
                 defaultValue = (defaultValue != null) && NumberUtils.isDigits(defaultValue)
                         ? defaultValue
@@ -314,6 +324,8 @@ public class DBColumn {
             case BIG_DECIMAL:
                 return defaultValue != null ? "new java.math.BigDecimal(\"" + defaultValue + "\")" : VALUE_BIG_DECIMAL;
             case INTEGER:
+                return defaultValue != null ? defaultValue : "0";
+            case SHORT:
                 return defaultValue != null ? defaultValue : "0";
             case SQL_TIME:
                 return "java.sql.Time.valueOf(java.time.LocalTime.now())";
